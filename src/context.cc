@@ -17,14 +17,14 @@ public:
 
 	virtual int Read(void *data, unsigned int size, unsigned int *processedSize) {
 		int64_t processedSize64;
-		int ret = m_def->read_cb(data, (int64_t)size, &processedSize64);
+		int ret = m_def->read_cb(m_def->id, data, (int64_t)size, &processedSize64);
 		*processedSize = (unsigned int)processedSize64;
 		return ret;
 	}
 
 	virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition) {
 		int64_t newPos64;
-		int ret = m_def->seek_cb(offset, int32_t(seekOrigin), &newPos64);
+		int ret = m_def->seek_cb(m_def->id, offset, int32_t(seekOrigin), &newPos64);
 		if (newPosition) {
 			*newPosition = (uint64_t)newPos64;
 		}
