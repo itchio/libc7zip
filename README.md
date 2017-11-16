@@ -1,7 +1,7 @@
 
-# szs
+# libc7zip
 
-szs (seven-zip service) is an archive listing & extraction service powered by 7-zip.
+A wrapper over lib7zip so it can be used from C without callbacks
 
 ### License
 

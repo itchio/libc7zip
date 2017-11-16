@@ -1,7 +1,0 @@
-
-table TestPacket {
-  answer: int;
-  pi: float;
-}
-
-root_type TestPacket;

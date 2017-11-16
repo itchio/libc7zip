@@ -1,8 +1,6 @@
 
 #pragma once
 
-#include <asio.hpp>
-
 #ifdef _WIN32
 #define _CRT_SECURE_NO_WARNINGS
 #include <windows.h>
