@@ -6,14 +6,23 @@ class CbInStream : public C7ZipInStream {
 
 public:
 	in_stream_def m_def;
+	wstring m_strFileExt;
 
 	CbInStream() {
 		// muffin
 	}
 
+	void CommitDef() {
+		int nLen = MultiByteToWideChar(CP_UTF8, 0, m_def.ext, -1, NULL, 0);
+		LPWSTR lpszW = new WCHAR[nLen];
+		MultiByteToWideChar(CP_UTF8, 0, m_def.ext, -1, lpszW, nLen);
+		m_strFileExt = lpszW;
+		// free the string
+		delete[] lpszW;
+	}
+
 	virtual wstring GetExt() const {
-		// TODO: use m_def->ext
-		return L"7z";
+		return m_strFileExt;
 	}
 
 	virtual int Read(void *data, unsigned int size, unsigned int *processedSize) {
@@ -45,15 +54,25 @@ public:
 class CbOutStream : public C7ZipOutStream {
 public:
 	out_stream_def m_def;
+	int m_nFileSize;
 
 	CbOutStream() {
 		// muffin
+	}
+
+	int GetFileSize() const {
+		fprintf(stderr, "CbOutStream->GetFileSize is called, our size is %d\n", m_nFileSize);
+		fflush(stderr);
+		return m_nFileSize;
 	}
 
 	virtual int Write(const void *data, unsigned int size, unsigned int *processedSize) {
 		int64_t processedSize64;
 		int ret = m_def.write_cb(m_def.id, data, (int64_t)size, &processedSize64);
 		*processedSize = (unsigned int)processedSize64;
+
+		m_nFileSize += (int)processedSize64;
+
 		return ret;
 	}
 
@@ -63,6 +82,7 @@ public:
 		if (newPosition) {
 			*newPosition = (uint64_t)newPos64;
 		}
+
 		return ret;
 	}
 
@@ -112,6 +132,10 @@ in_stream *in_stream_new() {
 
 in_stream_def *in_stream_get_def(in_stream *is) {
 	return &is->strm->m_def;
+}
+
+void in_stream_commit_def(in_stream *is) {
+	is->strm->CommitDef();
 }
 
 void in_stream_free(in_stream *is) {
@@ -177,63 +201,30 @@ item *archive_get_item(archive *a, int64_t index) {
 	return i;
 }
 
-int archive_extract(archive *a, item *i, out_stream *os) {
+int archive_extract_item(archive *a, item *i, out_stream *os) {
 	return a->arch->Extract(i->itm, os->strm);
 }
 
-void archive_item_free(item *i) {
+void item_free(item *i) {
 	// sic. we don't need to free the C7ZipArchiveItem here
 	free(i);
 }
 
-// #ifdef _WIN32
-// int _tmain(int argc, _TCHAR* argv[])
-// #else
-// int main(int argc, char * argv[])
-// #endif
-// {
-// 	C7ZipLibrary lib;
+char *item_get_string_property(item *i, int32_t property_index) {
+	// FIXME: stub!
+	return NULL;
+}
 
-// 	if (!lib.Initialize()) {
-// 		wprintf(L"initialize fail!\n");
-// 		return 1;
-// 	}
+uint64_t item_get_uint64_property(item *i, int32_t property_index) {
+	uint64_t ret;
+	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
+	i->itm->GetUInt64Property(pi, ret);
+	return ret;
+}
 
-// 	C7ZipArchive * pArchive = NULL;
-
-// 	TestInStream stream("Test7Zip.7z");
-// 	TestOutStream oStream("TestResult.txt");
-// 	if (lib.OpenArchive(&stream, &pArchive)) {
-// 		unsigned int numItems = 0;
-
-// 		pArchive->GetItemCount(&numItems);
-
-// 		wprintf(L"%d\n", numItems);
-
-// 		for(unsigned int i = 0;i < numItems;i++) {
-// 			C7ZipArchiveItem * pArchiveItem = NULL;
-
-// 			if (pArchive->GetItemInfo(i, &pArchiveItem)) {
-// 				wprintf(L"%d,%ls,%d\n", pArchiveItem->GetArchiveIndex(),
-// 						pArchiveItem->GetFullPath().c_str(),
-// 						pArchiveItem->IsDir());
-
-// 				//set archive password or item password
-// 				pArchive->SetArchivePassword(L"test");
-// 				if (i==0) {
-// 					//Or set password for each archive item
-// 					//pArchiveItem->SetArchiveItemPassword(L"test");
-// 					pArchive->Extract(pArchiveItem, &oStream);
-// 				}
-// 			} //if
-// 		}//for
-// 	}
-// 	else {
-// 		wprintf(L"open archive Test7Zip.7z fail\n");
-// 	}
-
-// 	if (pArchive != NULL)
-// 		delete pArchive;
-
-// 	return 0;
-// }
+int32_t item_get_bool_property(item *i, int32_t property_index) {
+	bool ret;
+	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
+	i->itm->GetBoolProperty(pi, ret);
+	return int32_t(ret);
+}
