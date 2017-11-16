@@ -5,9 +5,10 @@
 class CbInStream : public C7ZipInStream {
 
 public:
-	in_stream_def *m_def;
+	in_stream_def m_def;
 
-	CbInStream(in_stream_def *def) : m_def(def) {
+	CbInStream() {
+		// muffin
 	}
 
 	virtual wstring GetExt() const {
@@ -17,14 +18,14 @@ public:
 
 	virtual int Read(void *data, unsigned int size, unsigned int *processedSize) {
 		int64_t processedSize64;
-		int ret = m_def->read_cb(m_def->id, data, (int64_t)size, &processedSize64);
+		int ret = m_def.read_cb(m_def.id, data, (int64_t)size, &processedSize64);
 		*processedSize = (unsigned int)processedSize64;
 		return ret;
 	}
 
 	virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition) {
 		int64_t newPos64;
-		int ret = m_def->seek_cb(m_def->id, offset, int32_t(seekOrigin), &newPos64);
+		int ret = m_def.seek_cb(m_def.id, offset, int32_t(seekOrigin), &newPos64);
 		if (newPosition) {
 			*newPosition = (uint64_t)newPos64;
 		}
@@ -32,96 +33,47 @@ public:
 	}
 
 	virtual int GetSize(unsigned __int64 * size) {
-		*size = (uint64_t)m_def->size;
+		*size = (uint64_t)m_def.size;
 		return 0;
 	}
 
 	virtual ~CbInStream() {
+		// muffin
 	}
 };
 
-class TestOutStream : public C7ZipOutStream
-{
-private:
-	FILE * m_pFile;
-	std::string m_strFileName;
-	wstring m_strFileExt;
-	int m_nFileSize;
+class CbOutStream : public C7ZipOutStream {
 public:
-	TestOutStream(std::string fileName) :
-	  m_strFileName(fileName),
-	  m_strFileExt(L"7z")
-	{
-		m_pFile = fopen(fileName.c_str(), "wb");
-		m_nFileSize = 0;
+	out_stream_def m_def;
 
-		int pos = m_strFileName.find_last_of(".");
+	CbOutStream() {
+		// muffin
+	}
 
-		if (pos != m_strFileName.npos)
-		{
-#ifdef _WIN32
-			std::string tmp = m_strFileName.substr(pos + 1);
-			int nLen = MultiByteToWideChar(CP_ACP, 0, tmp.c_str(), -1, NULL, 0);
-			LPWSTR lpszW = new WCHAR[nLen];
-			MultiByteToWideChar(CP_ACP, 0, 
-			   tmp.c_str(), -1, lpszW, nLen);
-			m_strFileExt = lpszW;
-			// free the string
-			delete[] lpszW;
-#else
-			m_strFileExt = L"7z";
-#endif
+	virtual int Write(const void *data, unsigned int size, unsigned int *processedSize) {
+		int64_t processedSize64;
+		int ret = m_def.write_cb(m_def.id, data, (int64_t)size, &processedSize64);
+		*processedSize = (unsigned int)processedSize64;
+		return ret;
+	}
+
+	virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition) {
+		int64_t newPos64;
+		int ret = m_def.seek_cb(m_def.id, offset, int32_t(seekOrigin), &newPos64);
+		if (newPosition) {
+			*newPosition = (uint64_t)newPos64;
 		}
-		wprintf(L"Ext:%ls\n", m_strFileExt.c_str());
+		return ret;
 	}
 
-	virtual ~TestOutStream()
-	{
-		fclose(m_pFile);
-	}
-
-public:
-	int GetFileSize() const 
-	{
-		return m_nFileSize;
-	}
-
-	virtual int Write(const void *data, unsigned int size, unsigned int *processedSize)
-	{
-		int count = fwrite(data, 1, size, m_pFile);
-		wprintf(L"Write:%d %d\n", size, count);
-
-		if (count >= 0)
-		{
-			if (processedSize != NULL)
-				*processedSize = count;
-
-			m_nFileSize += count;
-			return 0;
-		}
-
-		return 1;
-	}
-
-	virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition)
-	{
-		int result = fseek(m_pFile, (long)offset, seekOrigin);
-
-		if (!result)
-		{
-			if (newPosition)
-				*newPosition = ftell(m_pFile);
-
-			return 0;
-		}
-
-		return result;
-	}
-
-	virtual int SetSize(unsigned __int64 size)
-	{
-		wprintf(L"SetFileSize:%ld\n", size);
+	virtual int SetSize(unsigned __int64 size) {
+		fprintf(stderr, "CbOutStream::SetSize: %lld\n", size);
+		fflush(stderr);
 		return 0;
+	}
+
+	virtual ~CbOutStream() {
+		// muffin
 	}
 };
 
@@ -143,19 +95,47 @@ lib *lib_new() {
 	return l;
 }
 
+void lib_free(lib *l) {
+	delete l->lib;
+	free(l);
+}
+
 struct in_stream {
 	CbInStream *strm;
 };
 
 in_stream *in_stream_new() {
-	in_stream *s = (in_stream *)calloc(1, sizeof(in_stream));
-	in_stream_def *def = (in_stream_def *)calloc(1, sizeof(in_stream_def));
-	s->strm = new CbInStream(def);
-	return s;
+	in_stream *is = (in_stream *)calloc(1, sizeof(in_stream));
+	is->strm = new CbInStream();
+	return is;
 }
 
-in_stream_def *in_stream_get_def(in_stream *s) {
-	return s->strm->m_def;
+in_stream_def *in_stream_get_def(in_stream *is) {
+	return &is->strm->m_def;
+}
+
+void in_stream_free(in_stream *is) {
+	delete is->strm;
+	free(is);
+}
+
+struct out_stream {
+	CbOutStream *strm;
+};
+
+out_stream *out_stream_new() {
+	out_stream *os = (out_stream *)calloc(1, sizeof(out_stream));
+	os->strm = new CbOutStream();
+	return os;
+};
+
+out_stream_def *out_stream_get_def(out_stream *os) {
+	return &os->strm->m_def;
+}
+
+void out_stream_free(out_stream *os) {
+	delete os->strm;
+	free(os);
 }
 
 struct archive {
@@ -180,6 +160,30 @@ int64_t archive_get_item_count(archive *a) {
 		return -1;
 	}
 	return (int64_t)numItems;
+}
+
+struct item {
+	C7ZipArchiveItem *itm;
+};
+
+item *archive_get_item(archive *a, int64_t index) {
+	C7ZipArchiveItem *itm;
+	if (!a->arch->GetItemInfo((unsigned int) index, &itm)) {
+		return NULL;
+	}
+
+	item *i = (item*)calloc(1, sizeof(item));
+	i->itm = itm;
+	return i;
+}
+
+int archive_extract(archive *a, item *i, out_stream *os) {
+	return a->arch->Extract(i->itm, os->strm);
+}
+
+void archive_item_free(item *i) {
+	// sic. we don't need to free the C7ZipArchiveItem here
+	free(i);
 }
 
 // #ifdef _WIN32
