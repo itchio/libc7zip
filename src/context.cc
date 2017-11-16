@@ -8,8 +8,6 @@ public:
 	in_stream_def *m_def;
 
 	CbInStream(in_stream_def *def) : m_def(def) {
-		fprintf(stderr, "Constructing CbInStream\n");
-		fflush(stderr);
 	}
 
 	virtual wstring GetExt() const {
@@ -21,36 +19,24 @@ public:
 		int64_t processedSize64;
 		int ret = m_def->read_cb(data, (int64_t)size, &processedSize64);
 		*processedSize = (unsigned int)processedSize64;
-		fprintf(stderr, "after read_cb, *processedSize = %u\n", *processedSize);
-		fflush(stderr);
 		return ret;
 	}
 
 	virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition) {
 		int64_t newPos64;
-		fprintf(stderr, "calling seek_cb\n");
-		fflush(stderr);
 		int ret = m_def->seek_cb(offset, int32_t(seekOrigin), &newPos64);
 		if (newPosition) {
 			*newPosition = (uint64_t)newPos64;
-			fprintf(stderr, "after seek_cb, *newPosition = %llu\n", *newPosition);
-		} else {
-			fprintf(stderr, "after seek_cb, didn't need newPosition\n");
 		}
-		fflush(stderr);
 		return ret;
 	}
 
 	virtual int GetSize(unsigned __int64 * size) {
 		*size = (uint64_t)m_def->size;
-		fprintf(stderr, "CbInStream GetSize called, we're giving it %llu\n", *size);
-		fflush(stderr);
 		return 0;
 	}
 
 	virtual ~CbInStream() {
-		fprintf(stderr, "Destroying CbInStream\n");
-		fflush(stderr);
 	}
 };
 
