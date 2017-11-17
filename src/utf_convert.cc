@@ -270,20 +270,31 @@ char *Utf16_To_Utf8(char *dest, const wchar_t *src, const wchar_t *srcLim)
   }
 }
 
-// bool ConvertUTF8ToUnicode(const AString &src, UString &dest)
-// {
-//   dest.Empty();
-//   size_t destLen = 0;
-//   Utf8_To_Utf16(NULL, &destLen, src, src.Ptr(src.Len()));
-//   bool res = Utf8_To_Utf16(dest.GetBuf((unsigned)destLen), &destLen, src, src.Ptr(src.Len()));
-//   dest.ReleaseBuf_SetEnd((unsigned)destLen);
-//   return res;
-// }
+// caller must free() argument when it's done with it
+std::wstring FromCString(char *utf8_c_string)
+{
+	int utf8_c_string_len = strlen(utf8_c_string);
+	auto utf8_c_string_end = utf8_c_string + utf8_c_string_len;
 
-// void ConvertUnicodeToUTF8(const UString &src, AString &dest)
-// {
-//   dest.Empty();
-//   size_t destLen = Utf16_To_Utf8_Calc(src, src.Ptr(src.Len()));
-//   Utf16_To_Utf8(dest.GetBuf((unsigned)destLen), src, src.Ptr(src.Len()));
-//   dest.ReleaseBuf_SetEnd((unsigned)destLen);
-// }
+	size_t utf16_c_string_len = 0;
+	Utf8_To_Utf16(nullptr, &utf16_c_string_len, utf8_c_string, utf8_c_string_end);
+	auto utf16_c_string = new wchar_t[utf16_c_string_len];
+	Utf8_To_Utf16(utf16_c_string, &utf16_c_string_len, utf8_c_string, utf8_c_string_end);
+
+	auto utf16_string = std::wstring(utf16_c_string, utf16_c_string_len);
+	delete[] utf16_c_string;
+	return utf16_string;
+}
+
+// caller must free() return value eventually
+char *ToCString(const std::wstring &utf16_string)
+{
+	auto utf16_c_string = utf16_string.c_str();
+	auto utf16_c_string_end = utf16_c_string + utf16_string.length();
+	size_t utf8_c_string_len = Utf16_To_Utf8_Calc(utf16_c_string, utf16_c_string_end);
+	char *utf8_c_string = (char *)calloc(utf8_c_string_len + 1, sizeof(char));
+	Utf16_To_Utf8(utf8_c_string, utf16_c_string, utf16_c_string_end);
+	utf8_c_string[utf8_c_string_len] = '\0';
+
+	return utf8_c_string;
+}

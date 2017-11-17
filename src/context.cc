@@ -1,6 +1,7 @@
 
 #include "internal.h"
 #include "utf_convert.h"
+#include <string.h>
 #include <libc7zip.h>
 
 class CbInStream : public C7ZipInStream {
@@ -14,17 +15,11 @@ public:
 	}
 
 	void CommitDef() {
-		auto src = m_def.ext;
-		auto srcEnd = src + strlen(src);
-
-		size_t destLen = 0;
-		Utf8_To_Utf16(NULL, &destLen, src, srcEnd);
-		auto dest = new wchar_t[destLen + 1];
-		Utf8_To_Utf16(dest, &destLen, src, srcEnd);
-		dest[destLen] = '\0';
-
-		m_strFileExt = dest;
-		delete[] dest;
+		if (m_def.ext) {
+			m_strFileExt = FromCString(m_def.ext);
+			free(m_def.ext);
+			m_def.ext = nullptr;
+		}
 	}
 
 	virtual wstring GetExt() const {
@@ -217,8 +212,10 @@ void item_free(item *i) {
 }
 
 char *item_get_string_property(item *i, int32_t property_index) {
-	// FIXME: stub!
-	return NULL;
+	std::wstring ret = L"";
+	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
+	i->itm->GetStringProperty(pi, ret);
+	return ToCString(ret);
 }
 
 uint64_t item_get_uint64_property(item *i, int32_t property_index) {

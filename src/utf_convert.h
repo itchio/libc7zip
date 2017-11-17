@@ -6,6 +6,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string>
+#include <string.h>
 
 bool CheckUTF8(const char *src, bool allowReduced = false) throw();
 
@@ -13,7 +15,7 @@ bool Utf8_To_Utf16(wchar_t *dest, size_t *destLen, const char *src, const char *
 size_t Utf16_To_Utf8_Calc(const wchar_t *src, const wchar_t *srcLim);
 char *Utf16_To_Utf8(char *dest, const wchar_t *src, const wchar_t *srcLim);
 
-// bool ConvertUTF8ToUnicode(const AString &utfString, UString &resultString);
-// void ConvertUnicodeToUTF8(const UString &unicodeString, AString &resultString);
+std::wstring FromCString(char *utf8_c_string);
+char *ToCString(const std::wstring &utf16_string);
 
 #endif
