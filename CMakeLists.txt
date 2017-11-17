@@ -16,6 +16,7 @@ set (SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 set (SOURCES
     ${SOURCE_DIR}/context.cc
+    ${SOURCE_DIR}/utf_convert.cc
 )
 
 add_library(c7zip SHARED ${SOURCES})

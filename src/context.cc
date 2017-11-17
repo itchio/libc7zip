@@ -1,5 +1,6 @@
 
 #include "internal.h"
+#include "utf_convert.h"
 #include <libc7zip.h>
 
 class CbInStream : public C7ZipInStream {
@@ -13,12 +14,17 @@ public:
 	}
 
 	void CommitDef() {
-		int nLen = MultiByteToWideChar(CP_UTF8, 0, m_def.ext, -1, NULL, 0);
-		LPWSTR lpszW = new WCHAR[nLen];
-		MultiByteToWideChar(CP_UTF8, 0, m_def.ext, -1, lpszW, nLen);
-		m_strFileExt = lpszW;
-		// free the string
-		delete[] lpszW;
+		auto src = m_def.ext;
+		auto srcEnd = src + strlen(src);
+
+		size_t destLen = 0;
+		Utf8_To_Utf16(NULL, &destLen, src, srcEnd);
+		auto dest = new wchar_t[destLen + 1];
+		Utf8_To_Utf16(dest, &destLen, src, srcEnd);
+		dest[destLen] = '\0';
+
+		m_strFileExt = dest;
+		delete[] dest;
 	}
 
 	virtual wstring GetExt() const {
