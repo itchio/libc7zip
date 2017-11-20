@@ -52,19 +52,13 @@ public:
 	}
 };
 
-class CbOutStream : public C7ZipOutStream {
+class CbSequentialOutStream : public C7ZipSequentialOutStream {
 public:
 	out_stream_def m_def;
 	int m_nFileSize;
 
-	CbOutStream() {
+	CbSequentialOutStream() {
 		// muffin
-	}
-
-	int GetFileSize() const {
-		fprintf(stderr, "CbOutStream->GetFileSize is called, our size is %d\n", m_nFileSize);
-		fflush(stderr);
-		return m_nFileSize;
 	}
 
 	virtual int Write(const void *data, unsigned int size, unsigned int *processedSize) {
@@ -77,23 +71,7 @@ public:
 		return ret;
 	}
 
-	virtual int Seek(__int64 offset, unsigned int seekOrigin, unsigned __int64 *newPosition) {
-		int64_t newPos64;
-		int ret = m_def.seek_cb(m_def.id, offset, int32_t(seekOrigin), &newPos64);
-		if (newPosition) {
-			*newPosition = (uint64_t)newPos64;
-		}
-
-		return ret;
-	}
-
-	virtual int SetSize(unsigned __int64 size) {
-		fprintf(stderr, "CbOutStream::SetSize: %lld\n", size);
-		fflush(stderr);
-		return 0;
-	}
-
-	virtual ~CbOutStream() {
+	virtual ~CbSequentialOutStream() {
 		// muffin
 	}
 };
@@ -145,12 +123,12 @@ void in_stream_free(in_stream *is) {
 }
 
 struct out_stream {
-	CbOutStream *strm;
+	CbSequentialOutStream *strm;
 };
 
 out_stream *out_stream_new() {
 	out_stream *os = (out_stream *)calloc(1, sizeof(out_stream));
-	os->strm = new CbOutStream();
+	os->strm = new CbSequentialOutStream();
 	return os;
 };
 
@@ -169,7 +147,7 @@ struct archive {
 
 archive *archive_open(lib *l, in_stream *s) {
 	C7ZipArchive *arch = NULL;
-	if (!l->lib->OpenArchive(s->strm, &arch)) {
+	if (!l->lib->OpenArchive(s->strm, &arch, true)) {
 		fprintf(stderr, "Could not open archive");
 		return NULL;
 	}
@@ -203,7 +181,8 @@ item *archive_get_item(archive *a, int64_t index) {
 }
 
 int archive_extract_item(archive *a, item *i, out_stream *os) {
-	return a->arch->Extract(i->itm, os->strm);
+	int ret = a->arch->Extract(i->itm, os->strm);
+	return ret;
 }
 
 void item_free(item *i) {
