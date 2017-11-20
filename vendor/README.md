@@ -1,7 +1,7 @@
 
 gitignored dirs:
 
-  - lib7zip: this has:
+  - lib7zip - built from <https://github.com/fasterthanlime/lib7zip> - this has:
     - bin/
       - 7z.dll
     - include/
