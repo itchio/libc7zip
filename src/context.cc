@@ -55,7 +55,6 @@ public:
 class CbSequentialOutStream : public C7ZipSequentialOutStream {
 public:
 	out_stream_def m_def;
-	int m_nFileSize;
 
 	CbSequentialOutStream() {
 		// muffin
@@ -65,13 +64,53 @@ public:
 		int64_t processedSize64;
 		int ret = m_def.write_cb(m_def.id, data, (int64_t)size, &processedSize64);
 		*processedSize = (unsigned int)processedSize64;
-
-		m_nFileSize += (int)processedSize64;
-
 		return ret;
 	}
 
 	virtual ~CbSequentialOutStream() {
+		m_def.close_cb(m_def.id);
+	}
+};
+
+struct in_stream {
+	CbInStream *strm;
+};
+
+struct out_stream {
+	CbSequentialOutStream *strm;
+};
+
+class CbExtractCallback : public C7ZipExtractCallback {
+public:
+	extract_callback_def m_def;
+
+	CbExtractCallback() {
+		// muffin
+	}
+
+  virtual void SetTotal(unsigned __int64 size) {
+		m_def.set_total_cb(m_def.id, (int64_t)size);
+	}
+
+  virtual void SetCompleted(const unsigned __int64 *completeValue) {
+		if (completeValue) {
+			m_def.set_completed_cb(m_def.id, (int64_t)*completeValue);
+		}
+	}
+
+	virtual C7ZipSequentialOutStream *GetStream(int index) {
+		auto os = m_def.get_stream_cb(m_def.id, index);
+		if (!os) {
+			return NULL;
+		}
+		return os->strm;
+	}
+
+	virtual void SetOperationResult(int operationResult) {
+		m_def.set_operation_result_cb(m_def.id, operationResult);
+	}
+
+	virtual ~CbExtractCallback() {
 		// muffin
 	}
 };
@@ -99,10 +138,6 @@ void lib_free(lib *l) {
 	free(l);
 }
 
-struct in_stream {
-	CbInStream *strm;
-};
-
 in_stream *in_stream_new() {
 	in_stream *is = (in_stream *)calloc(1, sizeof(in_stream));
 	is->strm = new CbInStream();
@@ -121,10 +156,6 @@ void in_stream_free(in_stream *is) {
 	delete is->strm;
 	free(is);
 }
-
-struct out_stream {
-	CbSequentialOutStream *strm;
-};
 
 out_stream *out_stream_new() {
 	out_stream *os = (out_stream *)calloc(1, sizeof(out_stream));
@@ -209,4 +240,23 @@ int32_t item_get_bool_property(item *i, int32_t property_index) {
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
 	i->itm->GetBoolProperty(pi, ret);
 	return int32_t(ret);
+}
+
+struct extract_callback {
+	CbExtractCallback *cb;
+};
+
+extract_callback *extract_callback_new() {
+	extract_callback *ec = (extract_callback *)calloc(1, sizeof(extract_callback));
+	ec->cb = new CbExtractCallback();
+	return ec;
+}
+
+extract_callback_def *extract_callback_get_def(extract_callback *ec) {
+	return &ec->cb->m_def;
+}
+
+void extract_callback_free(extract_callback *ec) {
+	delete ec->cb;
+	free(ec);
 }
