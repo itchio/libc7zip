@@ -241,7 +241,7 @@ char *item_get_string_property(item *i, int32_t property_index) {
 }
 
 uint64_t item_get_uint64_property(item *i, int32_t property_index) {
-	uint64_t ret;
+	unsigned __int64 ret;
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
 	i->itm->GetUInt64Property(pi, ret);
 	return ret;
