@@ -11,6 +11,7 @@ extern "C" {
 struct lib;
 typedef struct lib lib;
 lib *lib_new();
+error_code lib_get_last_error(lib *l);
 void lib_free(lib *l);
 
 struct in_stream;
@@ -25,7 +26,6 @@ typedef int (*seek_cb_t)(int64_t id, int64_t offset, int32_t whence, int64_t *ne
 
 // SequentialOutStream functions
 typedef int (*write_cb_t)(int64_t id, const void *data, int64_t size, int64_t *processed_size);
-typedef int (*close_cb_t)(int64_t id);
 
 // ExtractCallback functions
 typedef void (*set_total_cb_t)(int64_t id, int64_t size);
@@ -44,7 +44,6 @@ typedef struct in_stream_def {
 typedef struct out_stream_def {
   int64_t id;
   write_cb_t write_cb;
-  close_cb_t close_cb;
 } out_stream_def;
 
 in_stream *in_stream_new();
@@ -89,6 +88,20 @@ enum property_index {
   kpidSize, //(Uncompressed Size)
 
   PROP_INDEX_END
+};
+
+// copied from lib7zip.h so we don't have to include it
+enum error_code
+{
+  LIB7ZIP_ErrorCode_Begin,
+
+  LIB7ZIP_NO_ERROR = LIB7ZIP_ErrorCode_Begin,
+  LIB7ZIP_UNKNOWN_ERROR,
+  LIB7ZIP_NOT_INITIALIZE,
+  LIB7ZIP_NEED_PASSWORD,
+  LIB7ZIP_NOT_SUPPORTED_ARCHIVE,
+
+  LIB7ZIP_ErrorCode_End
 };
 
 struct item;

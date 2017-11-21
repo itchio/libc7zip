@@ -68,7 +68,7 @@ public:
 	}
 
 	virtual ~CbSequentialOutStream() {
-		m_def.close_cb(m_def.id);
+		// muffin
 	}
 };
 
@@ -131,6 +131,10 @@ lib *lib_new() {
 	}
 
 	return l;
+}
+
+error_code lib_get_last_error(lib *l) {
+	return (error_code) l->lib->GetLastError();
 }
 
 void lib_free(lib *l) {
