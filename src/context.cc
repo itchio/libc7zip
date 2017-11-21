@@ -192,6 +192,15 @@ archive *archive_open(lib *l, in_stream *s) {
 	return a;
 }
 
+void archive_close(archive *a) {
+	a->arch->Close();
+}
+
+void archive_free(archive *a) {
+	delete a->arch;
+	free(a);
+}
+
 int64_t archive_get_item_count(archive *a) {
 	unsigned int numItems;
 	if (!a->arch->GetItemCount(&numItems)) {

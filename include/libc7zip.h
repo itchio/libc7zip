@@ -58,6 +58,8 @@ void out_stream_free(out_stream *s);
 struct archive;
 typedef struct archive archive;
 archive *archive_open(lib *l, in_stream *is);
+void archive_close(archive *a);
+void archive_free(archive *a);
 int64_t archive_get_item_count(archive *a);
 
 // copied from lib7zip.h so we don't have to include it
