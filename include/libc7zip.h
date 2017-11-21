@@ -30,7 +30,7 @@ typedef int (*write_cb_t)(int64_t id, const void *data, int64_t size, int64_t *p
 // ExtractCallback functions
 typedef void (*set_total_cb_t)(int64_t id, int64_t size);
 typedef void (*set_completed_cb_t)(int64_t id, int64_t complete_value);
-typedef out_stream *(*get_stream_cb_t)(int64_t id, int32_t index);
+typedef out_stream *(*get_stream_cb_t)(int64_t id, int64_t index);
 typedef void (*set_operation_result_cb_t)(int64_t id, int32_t operation_result);
 
 typedef struct in_stream_def {
@@ -130,7 +130,7 @@ extract_callback *extract_callback_new();
 extract_callback_def *extract_callback_get_def(extract_callback *ec);
 void extract_callback_free(extract_callback *ec);
 
-int archive_extract_several(archive *a, int32_t *indices, int32_t num_indices, extract_callback *ec);
+int archive_extract_several(archive *a, int64_t *indices, int32_t num_indices, extract_callback *ec);
 
 #ifdef __cplusplus
 } // extern "C"

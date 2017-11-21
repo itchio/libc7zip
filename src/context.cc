@@ -99,7 +99,7 @@ public:
 	}
 
 	virtual C7ZipSequentialOutStream *GetStream(int index) {
-		auto os = m_def.get_stream_cb(m_def.id, index);
+		auto os = m_def.get_stream_cb(m_def.id, (__int64)index);
 		if (!os) {
 			return NULL;
 		}
@@ -225,8 +225,7 @@ item *archive_get_item(archive *a, int64_t index) {
 }
 
 int archive_extract_item(archive *a, item *i, out_stream *os) {
-	int ret = a->arch->Extract(i->itm, os->strm);
-	return ret;
+	return a->arch->Extract(i->itm, os->strm);
 }
 
 void item_free(item *i) {
@@ -272,4 +271,16 @@ extract_callback_def *extract_callback_get_def(extract_callback *ec) {
 void extract_callback_free(extract_callback *ec) {
 	delete ec->cb;
 	free(ec);
+}
+
+int archive_extract_several(archive *a, int64_t *indices, int32_t num_indices, extract_callback *ec) {
+	// that's a bit silly but oh well
+	auto uIndices = new unsigned int[num_indices];
+	for (int32_t i = 0 ; i < num_indices; i++) {
+		uIndices[i] = (unsigned int)indices[i];
+	}
+
+	auto ret = a->arch->ExtractSeveral(uIndices, (int)num_indices, ec->cb);
+	delete[] uIndices;
+	return ret;
 }
