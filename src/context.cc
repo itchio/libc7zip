@@ -133,8 +133,8 @@ lib *lib_new() {
 	return l;
 }
 
-error_code lib_get_last_error(lib *l) {
-	return (error_code) l->lib->GetLastError();
+int32_t lib_get_last_error(lib *l) {
+	return (int32_t) l->lib->GetLastError();
 }
 
 void lib_free(lib *l) {

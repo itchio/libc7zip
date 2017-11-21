@@ -11,7 +11,7 @@ extern "C" {
 struct lib;
 typedef struct lib lib;
 lib *lib_new();
-error_code lib_get_last_error(lib *l);
+int32_t lib_get_last_error(lib *l);
 void lib_free(lib *l);
 
 struct in_stream;
