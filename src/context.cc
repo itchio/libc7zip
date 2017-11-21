@@ -180,9 +180,9 @@ struct archive {
 	C7ZipArchive *arch;
 };
 
-archive *archive_open(lib *l, in_stream *s) {
+archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
 	C7ZipArchive *arch = NULL;
-	if (!l->lib->OpenArchive(s->strm, &arch, true)) {
+	if (!l->lib->OpenArchive(s->strm, &arch, by_signature != 0)) {
 		fprintf(stderr, "Could not open archive");
 		return NULL;
 	}
