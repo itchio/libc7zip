@@ -21,7 +21,7 @@ set (SOURCES
 
 add_library(c7zip SHARED ${SOURCES})
 
-target_compile_options(c7zip PRIVATE -Wall -Wno-missing-braces -std=c++11 -fPIC)
+target_compile_options(c7zip PRIVATE -std=c++11)
 
 add_dependencies(c7zip 7zip)
 target_link_libraries(c7zip 7zip)

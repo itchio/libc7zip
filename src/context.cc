@@ -116,16 +116,16 @@ public:
 };
 
 struct lib {
-	C7ZipLibrary *lib;
+	C7ZipLibrary *_lib;
 };
 
 lib *lib_new() {
 	lib *l = (lib *)calloc(1, sizeof(lib));
-	l->lib = new C7ZipLibrary();
+	l->_lib = new C7ZipLibrary();
 
-	if (!l->lib->Initialize()) {
+	if (!l->_lib->Initialize()) {
 		fprintf(stderr, "Initialize fail!\n");
-		delete l->lib;
+		delete l->_lib;
 		free(l);
 		return NULL;
 	}
@@ -134,11 +134,11 @@ lib *lib_new() {
 }
 
 int32_t lib_get_last_error(lib *l) {
-	return (int32_t) l->lib->GetLastError();
+	return (int32_t) l->_lib->GetLastError();
 }
 
 void lib_free(lib *l) {
-	delete l->lib;
+	delete l->_lib;
 	free(l);
 }
 
@@ -182,7 +182,7 @@ struct archive {
 
 archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
 	C7ZipArchive *arch = NULL;
-	if (!l->lib->OpenArchive(s->strm, &arch, by_signature != 0)) {
+	if (!l->_lib->OpenArchive(s->strm, &arch, by_signature != 0)) {
 		fprintf(stderr, "Could not open archive");
 		return NULL;
 	}
