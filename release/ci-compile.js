@@ -5,23 +5,52 @@ const $ = require("./common");
 async function ci_compile(args) {
   const [os, arch] = args;
 
-  $.say(`compiling libc7zip for os ${os}, arch ${arch}`);
-  $.say(`process.versions: ${JSON.stringify(process.versions, null, 2)}`);
+  if (!os) { throw new Error(`missing os`); }
+  if (["linux", "windows", "darwin"].indexOf(os) === -1) { throw new Error(`unknown os '${os}'`); }
 
-  let buildDir = `./build`;
+  if (!arch) { throw new Error(`missing arch`); }
+  if (["386", "amd64"].indexOf(arch) === -1) { throw new Error(`unknown os '${arch}'`); }
+
+  const osarch = `${os}-${arch}`;
+  $.say(`compiling libc7zip for ${osarch}`);
+
+  let buildDir = `./build/${osarch}`;
   $(await $.sh(`rm -rf ${buildDir}`));
   $(await $.sh(`mkdir -p ${buildDir}`));
 
+  let extraCMakeFlags = ""
+  if (os === "windows") {
+    if (arch === "386") {
+      extraCMakeFlags = `-G "Visual Studio 14 2015"`;
+    } else {
+      extraCMakeFlags = `-G "Visual Studio 14 2015 Win64"`;
+    }
+  }
+
   await $.cd(buildDir, async () => {
-    $(await $.sh(`cmake -DCMAKE_BUILD_TYPE=Release ..`))
-    $(await $.sh(`cmake --build .`))
+    $(await $.sh(`cmake ${extraCMakeFlags} -DCMAKE_BUILD_TYPE=Release ../..`))
+    $(await $.sh(`cmake --build . --config Release`))
   });
 
-  const osarch = `${os}-${arch}`;
   let binDir = `./compile-artifacts/${osarch}`;
   $(await $.sh(`mkdir -p ${binDir}`));
 
-  $(await $.sh(`cp -f ${buildDir}/${libname(os)} ${binDir}/`));
+  let artifacts = [];
+  switch (os) {
+    case "linux":
+      artifacts.push(libname(os));
+      break;
+    case "darwin":
+      artifacts.push(libname(os));
+      break;
+    case "windows":
+      artifacts.push(`Release/${libname(os)}`);
+      break;
+  }
+
+  for (const artifact of artifacts) {
+    $(await $.sh(`cp -f ${buildDir}/${artifact} ${binDir}/`));
+  }
 }
 
 function libname(os) {

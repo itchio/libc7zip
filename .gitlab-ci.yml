@@ -24,3 +24,25 @@ build:linux:386:
       - compile-artifacts
     expire_in: 1 week
 
+build:windows:
+  stage: build
+  tags:
+    - windows
+  script:
+    - node release/ci-compile.js windows 386
+    - node release/ci-compile.js windows amd64
+  artifacts:
+    paths:
+      - compile-artifacts
+    expire_in: 1 week
+
+build:darwin:amd64:
+  stage: build
+  tags:
+    - darwin
+  script:
+    - node release/ci-compile.js darwin amd64
+  artifacts:
+    paths:
+      - compile-artifacts
+    expire_in: 1 week
