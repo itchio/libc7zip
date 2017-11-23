@@ -2,6 +2,7 @@
 // under the GNU LGPL 2.1
 
 #include "utf_convert.h"
+#include <stdlib.h>
 
 #ifdef _WIN32
 #define _WCHART_IS_16BIT 1
