@@ -7,7 +7,7 @@ build:linux:amd64:
   tags:
     - docker-capsule-64
   script:
-    - node scripts/ci-compile.js linux amd64
+    - node release/ci-compile.js linux amd64
   artifacts:
     paths:
       - compile-artifacts
@@ -18,7 +18,7 @@ build:linux:386:
   tags:
     - docker-capsule-32
   script:
-    - node scripts/ci-compile.js linux 386
+    - node release/ci-compile.js linux 386
   artifacts:
     paths:
       - compile-artifacts
