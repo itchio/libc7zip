@@ -16,9 +16,8 @@ public:
 
 	void CommitDef() {
 		if (m_def.ext) {
+			// the caller allocated m_def.ext, and is also in charge of freeing it
 			m_strFileExt = FromCString(m_def.ext);
-			free(m_def.ext);
-			m_def.ext = nullptr;
 		}
 	}
 
@@ -119,7 +118,7 @@ struct lib {
 	C7ZipLibrary *_lib;
 };
 
-lib *lib_new() {
+MYEXPORT lib *lib_new() {
 	lib *l = (lib *)calloc(1, sizeof(lib));
 	l->_lib = new C7ZipLibrary();
 
@@ -133,45 +132,45 @@ lib *lib_new() {
 	return l;
 }
 
-int32_t lib_get_last_error(lib *l) {
+MYEXPORT int32_t lib_get_last_error(lib *l) {
 	return (int32_t) l->_lib->GetLastError();
 }
 
-void lib_free(lib *l) {
+MYEXPORT void lib_free(lib *l) {
 	delete l->_lib;
 	free(l);
 }
 
-in_stream *in_stream_new() {
+MYEXPORT in_stream *in_stream_new() {
 	in_stream *is = (in_stream *)calloc(1, sizeof(in_stream));
 	is->strm = new CbInStream();
 	return is;
 }
 
-in_stream_def *in_stream_get_def(in_stream *is) {
+MYEXPORT in_stream_def *in_stream_get_def(in_stream *is) {
 	return &is->strm->m_def;
 }
 
-void in_stream_commit_def(in_stream *is) {
+MYEXPORT void in_stream_commit_def(in_stream *is) {
 	is->strm->CommitDef();
 }
 
-void in_stream_free(in_stream *is) {
+MYEXPORT void in_stream_free(in_stream *is) {
 	delete is->strm;
 	free(is);
 }
 
-out_stream *out_stream_new() {
+MYEXPORT out_stream *out_stream_new() {
 	out_stream *os = (out_stream *)calloc(1, sizeof(out_stream));
 	os->strm = new CbSequentialOutStream();
 	return os;
 };
 
-out_stream_def *out_stream_get_def(out_stream *os) {
+MYEXPORT out_stream_def *out_stream_get_def(out_stream *os) {
 	return &os->strm->m_def;
 }
 
-void out_stream_free(out_stream *os) {
+MYEXPORT void out_stream_free(out_stream *os) {
 	delete os->strm;
 	free(os);
 }
@@ -180,7 +179,7 @@ struct archive {
 	C7ZipArchive *arch;
 };
 
-archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
+MYEXPORT archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
 	C7ZipArchive *arch = NULL;
 	if (!l->_lib->OpenArchive(s->strm, &arch, by_signature != 0)) {
 		fprintf(stderr, "Could not open archive");
@@ -192,16 +191,16 @@ archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
 	return a;
 }
 
-void archive_close(archive *a) {
+MYEXPORT void archive_close(archive *a) {
 	a->arch->Close();
 }
 
-void archive_free(archive *a) {
+MYEXPORT void archive_free(archive *a) {
 	delete a->arch;
 	free(a);
 }
 
-int64_t archive_get_item_count(archive *a) {
+MYEXPORT int64_t archive_get_item_count(archive *a) {
 	unsigned int numItems;
 	if (!a->arch->GetItemCount(&numItems)) {
 		return -1;
@@ -213,7 +212,7 @@ struct item {
 	C7ZipArchiveItem *itm;
 };
 
-item *archive_get_item(archive *a, int64_t index) {
+MYEXPORT item *archive_get_item(archive *a, int64_t index) {
 	C7ZipArchiveItem *itm;
 	if (!a->arch->GetItemInfo((unsigned int) index, &itm)) {
 		return NULL;
@@ -224,30 +223,36 @@ item *archive_get_item(archive *a, int64_t index) {
 	return i;
 }
 
-int archive_extract_item(archive *a, item *i, out_stream *os) {
+MYEXPORT int archive_extract_item(archive *a, item *i, out_stream *os) {
 	return a->arch->Extract(i->itm, os->strm);
 }
 
-void item_free(item *i) {
+MYEXPORT void item_free(item *i) {
 	// sic. we don't need to free the C7ZipArchiveItem here
 	free(i);
 }
 
-char *item_get_string_property(item *i, int32_t property_index) {
+MYEXPORT char *item_get_string_property(item *i, int32_t property_index) {
 	std::wstring ret = L"";
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
 	i->itm->GetStringProperty(pi, ret);
 	return ToCString(ret);
 }
 
-uint64_t item_get_uint64_property(item *i, int32_t property_index) {
+// this is exported so we don't free a string with a
+// different memory allocator
+MYEXPORT void string_free(char *s) {
+	free(s);
+}
+
+MYEXPORT uint64_t item_get_uint64_property(item *i, int32_t property_index) {
 	unsigned __int64 ret;
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
 	i->itm->GetUInt64Property(pi, ret);
 	return ret;
 }
 
-int32_t item_get_bool_property(item *i, int32_t property_index) {
+MYEXPORT int32_t item_get_bool_property(item *i, int32_t property_index) {
 	bool ret;
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
 	i->itm->GetBoolProperty(pi, ret);
@@ -258,22 +263,22 @@ struct extract_callback {
 	CbExtractCallback *cb;
 };
 
-extract_callback *extract_callback_new() {
+MYEXPORT extract_callback *extract_callback_new() {
 	extract_callback *ec = (extract_callback *)calloc(1, sizeof(extract_callback));
 	ec->cb = new CbExtractCallback();
 	return ec;
 }
 
-extract_callback_def *extract_callback_get_def(extract_callback *ec) {
+MYEXPORT extract_callback_def *extract_callback_get_def(extract_callback *ec) {
 	return &ec->cb->m_def;
 }
 
-void extract_callback_free(extract_callback *ec) {
+MYEXPORT void extract_callback_free(extract_callback *ec) {
 	delete ec->cb;
 	free(ec);
 }
 
-int archive_extract_several(archive *a, int64_t *indices, int32_t num_indices, extract_callback *ec) {
+MYEXPORT int archive_extract_several(archive *a, int64_t *indices, int32_t num_indices, extract_callback *ec) {
 	// that's a bit silly but oh well
 	auto uIndices = new unsigned int[num_indices];
 	for (int32_t i = 0 ; i < num_indices; i++) {

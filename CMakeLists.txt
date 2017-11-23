@@ -2,6 +2,12 @@ cmake_minimum_required(VERSION 2.8)
 
 project(libcz7ip)
 
+if (MSVC)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_RELEASE} /MT")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} /MTd")
+endif()
+
 set(INCLUDE_DIR include)
 
 set(lib7zip_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/vendor/lib7zip/Lib7Zip)
