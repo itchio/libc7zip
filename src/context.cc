@@ -3,6 +3,7 @@
 #include "utf_convert.h"
 #include <string.h>
 #include <libc7zip.h>
+#include <stdlib.h>
 
 class CbInStream : public C7ZipInStream {
 
