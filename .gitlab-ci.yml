@@ -1,0 +1,26 @@
+
+stages:
+  - build
+
+build:linux:amd64:
+  stage: build
+  tags:
+    - docker-capsule-64
+  script:
+    - node scripts/ci-compile.js linux amd64
+  artifacts:
+    paths:
+      - compile-artifacts
+    expire_in: 1 week
+
+build:linux:386:
+  stage: build
+  tags:
+    - docker-capsule-32
+  script:
+    - node scripts/ci-compile.js linux 386
+  artifacts:
+    paths:
+      - compile-artifacts
+    expire_in: 1 week
+
