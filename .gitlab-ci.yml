@@ -1,6 +1,7 @@
 
 stages:
   - build
+  - deploy
 
 build:linux:amd64:
   stage: build
@@ -46,3 +47,15 @@ build:darwin:amd64:
     paths:
       - compile-artifacts
     expire_in: 1 week
+
+deploy:
+  stage: deploy
+  tags:
+    - dropsy
+  script:
+    - /bin/sh scripts/ci-deploy.sh
+  dependencies:
+    - :build:linux:386
+    - :build:linux:amd64
+    - :build:windows
+    - :build:darwin:amd64
