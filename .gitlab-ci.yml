@@ -53,7 +53,7 @@ deploy:
   tags:
     - dropsy
   script:
-    - /bin/sh scripts/ci-deploy.sh
+    - /bin/sh release/ci-deploy.sh
   dependencies:
     - :build:linux:386
     - :build:linux:amd64
