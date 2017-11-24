@@ -37,21 +37,15 @@ async function ci_compile(args) {
   let binDir = `${artifactsDir}/${ciVersion}`;
   $(await $.sh(`mkdir -p ${binDir}`));
 
-  let artifacts = [];
-  switch (os) {
-    case "linux":
-      artifacts.push(libname(os));
-      break;
-    case "darwin":
-      artifacts.push(libname(os));
-      break;
-    case "windows":
-      artifacts.push(`Release/${libname(os)}`);
-      break;
-  }
+  let artifacts = [libname(os)];
 
+  let artifactDir = buildDir;
+  if (os === "windows") {
+    artifactDir = `${artifactDir}/Release`;
+  }
+  
   for (const artifact of artifacts) {
-    const fullArtifactPath = `${buildDir}/${artifact}`;
+    const fullArtifactPath = `${artifactDir}/${artifact}`;
     if (os === "windows") {
       const signKey = "itch corp.";
       const signUrl = "http://timestamp.comodoca.com/";
@@ -69,12 +63,14 @@ async function ci_compile(args) {
     //     - windows-amd64
     //       - LATEST
     //       - v1.1.0
+    //         - libc7zip.7z
     //         - libc7zip.zip
     //         - c7zip.dll
     //         - SHA1SUMS
     //         - SHA256SUMS
 
-    $(await $.sh(`zip -9 -r libc7zip.zip ${artifacts.join(" ")}`));
+    $(await $.sh(`7za a libc7zip.zip ${artifacts.join(" ")}`));
+    $(await $.sh(`7za a libc7zip.7z ${artifacts.join(" ")}`));
     $(await $.sh(`sha1sum * > SHA1SUMS`));
     $(await $.sh(`sha256sum * > SHA256SUMS`));
   });
