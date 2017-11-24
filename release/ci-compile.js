@@ -32,7 +32,9 @@ async function ci_compile(args) {
     $(await $.sh(`cmake --build . --config Release`))
   });
 
-  let binDir = `./compile-artifacts/${osarch}`;
+  let ciVersion = process.env.CI_BUILD_REF_NAME;
+  let artifactsDir = `./compile-artifacts/${osarch}`;
+  let binDir = `${artifactsDir}/${ciVersion}`;
   $(await $.sh(`mkdir -p ${binDir}`));
 
   let artifacts = [];
@@ -50,6 +52,37 @@ async function ci_compile(args) {
 
   for (const artifact of artifacts) {
     $(await $.sh(`cp -f ${buildDir}/${artifact} ${binDir}/`));
+  }
+
+  await $.cd(binDir, async () => {
+    // set up a file hierarchy that ibrew can consume, ie:
+    //
+    // - dl.itch.ovh
+    //   - libc7zip
+    //     - windows-amd64
+    //       - LATEST
+    //       - v1.1.0
+    //         - libc7zip.7z
+    //         - libc7zip.zip
+    //         - c7zip.dll
+    //         - SHA1SUMS
+    //         - SHA256SUMS
+
+    if (os === "windows") {
+      const signKey = "itch corp.";
+      const signUrl = "http://timestamp.comodoca.com/";
+      
+      $(await $.sh(`../vendor/signtool.exe sign //v //s MY //n "${signKey}" //fd sha256 //tr "${signUrl}?td=sha256" //td sha256 ${artifacts.join(" ")}`));
+    }
+
+    $(await $.sh(`7za a libc7zip.7z ${artifacts.join(" ")}`));
+    $(await $.sh(`7za a libc7zip.zip ${artifacts.join(" ")}`));
+    $(await $.sh(`sha1sum * > SHA1SUMS`));
+    $(await $.sh(`sha256sum * > SHA256SUMS`));
+  });
+
+  if (process.env.CI_BUILD_TAG) {
+    await $.writeFile(`${artifactsDir}/LATEST`, `${process.env.CI_BUILD_TAG}\n`);
   }
 }
 
