@@ -54,8 +54,3 @@ deploy:
     - dropsy
   script:
     - /bin/sh release/ci-deploy.sh
-  dependencies:
-    - :build:linux:386
-    - :build:linux:amd64
-    - :build:windows
-    - :build:darwin:amd64
