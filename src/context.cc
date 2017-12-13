@@ -224,6 +224,10 @@ MYEXPORT item *archive_get_item(archive *a, int64_t index) {
 	return i;
 }
 
+MYEXPORT int32_t item_get_archive_index(item *i) {
+	return (int32_t)i->itm->GetArchiveIndex();
+}
+
 MYEXPORT int archive_extract_item(archive *a, item *i, out_stream *os) {
 	return a->arch->Extract(i->itm, os->strm);
 }
@@ -233,10 +237,13 @@ MYEXPORT void item_free(item *i) {
 	free(i);
 }
 
-MYEXPORT char *item_get_string_property(item *i, int32_t property_index) {
+MYEXPORT char *item_get_string_property(item *i, int32_t property_index, int32_t *success) {
 	std::wstring ret = L"";
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
-	i->itm->GetStringProperty(pi, ret);
+	auto success_in = i->itm->GetStringProperty(pi, ret);
+	if (success) {
+		*success = success_in;
+	}
 	return ToCString(ret);
 }
 
@@ -246,17 +253,23 @@ MYEXPORT void string_free(char *s) {
 	free(s);
 }
 
-MYEXPORT uint64_t item_get_uint64_property(item *i, int32_t property_index) {
-	unsigned __int64 ret;
+MYEXPORT uint64_t item_get_uint64_property(item *i, int32_t property_index, int32_t *success) {
+	unsigned __int64 ret = 0;
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
-	i->itm->GetUInt64Property(pi, ret);
+	auto success_in = i->itm->GetUInt64Property(pi, ret);
+	if (success) {
+		*success = success_in;
+	}
 	return ret;
 }
 
-MYEXPORT int32_t item_get_bool_property(item *i, int32_t property_index) {
-	bool ret;
+MYEXPORT int32_t item_get_bool_property(item *i, int32_t property_index, int32_t *success) {
+	bool ret = false;
 	auto pi = (lib7zip::PropertyIndexEnum)(property_index);
-	i->itm->GetBoolProperty(pi, ret);
+	auto success_in = i->itm->GetBoolProperty(pi, ret);
+	if (success) {
+		*success = success_in;
+	}
 	return int32_t(ret);
 }
 
