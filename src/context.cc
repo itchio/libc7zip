@@ -183,7 +183,6 @@ struct archive {
 MYEXPORT archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
 	C7ZipArchive *arch = NULL;
 	if (!l->_lib->OpenArchive(s->strm, &arch, by_signature != 0)) {
-		fprintf(stderr, "Could not open archive");
 		return NULL;
 	}
 
