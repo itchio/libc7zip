@@ -209,6 +209,11 @@ MYEXPORT int64_t archive_get_item_count(archive *a) {
 	return (int64_t)numItems;
 }
 
+MYEXPORT char *archive_get_archive_format(archive *a) {
+	std::wstring ret = a->arch->GetArchiveFormat();
+	return ToCString(ret);
+}
+
 struct item {
 	C7ZipArchiveItem *itm;
 };
