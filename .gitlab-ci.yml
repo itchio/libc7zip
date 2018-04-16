@@ -11,7 +11,7 @@ build:linux:amd64:
     - node release/ci-compile.js linux amd64
   artifacts:
     paths:
-      - compile-artifacts
+      - broth
     expire_in: 1 week
 
 build:linux:386:
@@ -22,7 +22,7 @@ build:linux:386:
     - node release/ci-compile.js linux 386
   artifacts:
     paths:
-      - compile-artifacts
+      - broth
     expire_in: 1 week
 
 build:windows:
@@ -34,7 +34,7 @@ build:windows:
     - node release/ci-compile.js windows amd64
   artifacts:
     paths:
-      - compile-artifacts
+      - broth
     expire_in: 1 week
 
 build:darwin:amd64:
@@ -45,7 +45,7 @@ build:darwin:amd64:
     - node release/ci-compile.js darwin amd64
   artifacts:
     paths:
-      - compile-artifacts
+      - broth
     expire_in: 1 week
 
 deploy:
@@ -53,4 +53,4 @@ deploy:
   tags:
     - dropsy
   script:
-    - /bin/sh release/ci-deploy.sh
+    - /bin/sh release/ci-deploy-itchio.sh

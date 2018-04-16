@@ -20,7 +20,7 @@ async function ci_compile(args) {
   $.say(`compiling libc7zip for ${osarch}`);
 
   let ciVersion = process.env.CI_BUILD_REF_NAME;
-  let artifactsDir = `./compile-artifacts/${osarch}`;
+  let artifactsDir = `./broth/${osarch}`;
   let binDir = `${artifactsDir}/${ciVersion}`;
   $(await $.sh(`mkdir -p ${binDir}`));
 
@@ -39,30 +39,6 @@ async function ci_compile(args) {
   $.say(`artifacts for ${osarch}: `);
   for (const artifactName of artifactNames) {
     $.say(` - ${artifactName}: ${await $.getOutput(`file ${binDir}/${artifactName}`)}`);
-  }
-
-  await $.cd(binDir, async () => {
-    // ibrew file hierarchy reminder:
-    //
-    // - dl.itch.ovh
-    //   - project
-    //     - os-arch
-    //       - LATEST
-    //       - v1.1.0
-    //         - naked-artifact
-    //         - project.7z
-    //         - project.zip
-    //         - SHA1SUMS
-    //         - SHA256SUMS
-
-    $(await $.sh(`7za a libc7zip.zip ${artifactNames.join(" ")}`));
-    $(await $.sh(`7za a libc7zip.7z ${artifactNames.join(" ")}`));
-    $(await $.sh(`sha1sum * > SHA1SUMS`));
-    $(await $.sh(`sha256sum * > SHA256SUMS`));
-  });
-
-  if (process.env.CI_BUILD_TAG) {
-    await $.writeFile(`${artifactsDir}/LATEST`, `${process.env.CI_BUILD_TAG}\n`);
   }
 }
 
