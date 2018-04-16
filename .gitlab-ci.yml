@@ -53,4 +53,4 @@ deploy:
   tags:
     - dropsy
   script:
-    - /bin/sh release/ci-deploy-itchio.sh
+    - release/ci-deploy-itchio.sh
