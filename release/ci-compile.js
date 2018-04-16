@@ -59,7 +59,7 @@ async function sign(target) {
     const signKey = "itch corp.";
     const signUrl = "http://timestamp.comodoca.com/";
     
-    $(await $.sh(`./vendor/signtool.exe sign //v //s MY //n "${signKey}" //fd sha256 //tr "${signUrl}?td=sha256" //td sha256 ${target}`));
+    $(await $.sh(`./vendor/signtool.exe sign //v //s MY //n "${signKey}" //fd sha256 //tr "${signUrl}" //td sha256 ${target}`));
   }
 }
 
