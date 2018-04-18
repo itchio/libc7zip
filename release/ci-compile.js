@@ -20,8 +20,7 @@ async function ci_compile(args) {
   $.say(`compiling libc7zip for ${osarch}`);
 
   let ciVersion = process.env.CI_BUILD_REF_NAME;
-  let artifactsDir = `./broth/${osarch}`;
-  let binDir = `${artifactsDir}/${ciVersion}`;
+  let binDir = `./broth/${osarch}`;
   $(await $.sh(`mkdir -p ${binDir}`));
 
   config = { os, arch, osarch, binDir, artifacts: [] };
