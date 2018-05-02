@@ -124,9 +124,8 @@ MYEXPORT lib *lib_new() {
 	l->_lib = new C7ZipLibrary();
 
 	if (!l->_lib->Initialize()) {
-		fprintf(stderr, "Initialize fail!\n");
-		delete l->_lib;
-		free(l);
+		fprintf(stderr, "lib7zip initialization failed.\n");
+		lib_free(l);
 		return NULL;
 	}
 
@@ -137,7 +136,15 @@ MYEXPORT int32_t lib_get_last_error(lib *l) {
 	return (int32_t) l->_lib->GetLastError();
 }
 
+MYEXPORT char *lib_get_version(lib *l) {
+	return (char *) l->_lib->GetVersion();
+}
+
 MYEXPORT void lib_free(lib *l) {
+	if (l->_lib->IsInitialized()) {
+		l->_lib->Deinitialize();
+	}
+
 	delete l->_lib;
 	free(l);
 }
