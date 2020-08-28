@@ -27,6 +27,6 @@ ${TOOLS_DIR}/butler -V
 pushd broth
 for i in *; do
     CHANNEL_NAME="${i}${CHANNEL_SUFFIX}"
-    ${TOOLS_DIR}/butler push --userversion "${USER_VERSION}" ./$i "fasterthanlime/libc7zip:${CHANNEL_NAME}"
+    ${TOOLS_DIR}/butler push --userversion "${USER_VERSION}" ./$i "itchio/libc7zip:${CHANNEL_NAME}"
 done
 popd
