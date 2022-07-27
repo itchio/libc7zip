@@ -198,6 +198,17 @@ MYEXPORT archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
 	return a;
 }
 
+MYEXPORT archive *archive_open_ex(lib *l, in_stream *s, const char *password, int32_t by_signature) {
+	C7ZipArchive *arch = NULL;
+	if (!l->_lib->OpenArchive(s->strm, &arch, FromCString((char *)password), by_signature != 0)) {
+		return NULL;
+	}
+
+	archive *a = (archive*)calloc(1, sizeof(archive));
+	a->arch = arch;
+	return a;
+}
+
 MYEXPORT void archive_close(archive *a) {
 	a->arch->Close();
 }
