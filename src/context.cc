@@ -80,6 +80,37 @@ struct out_stream {
 	CbSequentialOutStream *strm;
 };
 
+
+class CbMultiVolumeCallback : public C7ZipMultiVolumes {
+public:
+	multivolume_callback_def m_def;
+
+	CbMultiVolumeCallback() {
+		// muffin
+	}
+
+	virtual wstring GetFirstVolumeName() {
+		return FromCString(m_def.get_first_volume_name_cb(m_def.id));
+	}
+	virtual bool MoveToVolume(const wstring & volumeName) {
+		char *retVolCName = ToCString(volumeName);
+		std::string _volumeName = retVolCName;
+		free(retVolCName);
+		return (bool)m_def.move_to_volume_cb(m_def.id, (char *)_volumeName.c_str());
+	}
+	virtual unsigned __int64 GetCurrentVolumeSize() {
+		return m_def.get_current_volume_size_cb(m_def.id);
+	}
+	virtual C7ZipInStream * OpenCurrentVolumeStream() {
+		in_stream *is = m_def.open_current_volume_stream_cb(m_def.id);
+		return is->strm;
+	}
+
+	virtual ~CbMultiVolumeCallback() {
+		// muffin
+	}
+};
+
 class CbExtractCallback : public C7ZipExtractCallback {
 public:
 	extract_callback_def m_def;
@@ -201,6 +232,36 @@ MYEXPORT archive *archive_open(lib *l, in_stream *s, int32_t by_signature) {
 MYEXPORT archive *archive_open_ex(lib *l, in_stream *s, const char *password, int32_t by_signature) {
 	C7ZipArchive *arch = NULL;
 	if (!l->_lib->OpenArchive(s->strm, &arch, FromCString((char *)password), by_signature != 0)) {
+		return NULL;
+	}
+
+	archive *a = (archive*)calloc(1, sizeof(archive));
+	a->arch = arch;
+	return a;
+}
+
+struct multivolume_callback {
+	CbMultiVolumeCallback *cb;
+};
+
+MYEXPORT multivolume_callback *multivolume_callback_new() {
+	multivolume_callback *mc = (multivolume_callback *)calloc(1, sizeof(multivolume_callback));
+	mc->cb = new CbMultiVolumeCallback();
+	return mc;
+}
+
+MYEXPORT multivolume_callback_def *multivolume_callback_get_def(multivolume_callback *mc) {
+	return &mc->cb->m_def;
+}
+
+MYEXPORT void multivolume_callback_free(multivolume_callback *mc) {
+	delete mc->cb;
+	free(mc);
+}
+
+MYEXPORT archive *archive_multiopen(lib *l, multivolume_callback *mc, const char *password, int32_t by_signature) {
+	C7ZipArchive *arch = NULL;
+	if (!l->_lib->OpenMultiVolumeArchive(mc->cb, &arch, FromCString((char *)password), by_signature != 0)) {
 		return NULL;
 	}
 
