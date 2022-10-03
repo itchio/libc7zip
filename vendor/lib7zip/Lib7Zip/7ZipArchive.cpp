@@ -140,10 +140,15 @@ private:
 	C7ZipSequentialOutStreamWrap * _outFileStreamSpec;
 	CMyComPtr<ISequentialOutStream> _outFileStream;
 	C7ZipSequentialOutStream * m_pSequentialOutStream;
-public:
-	CCustomArchiveExtractCallback(C7ZipExtractCallback *pCallback) :
-		m_pCallback(pCallback) {
 
+	const C7ZipArchive * m_pArchive;
+	const C7ZipArchiveItem * m_pItem;
+public:
+	CCustomArchiveExtractCallback(C7ZipExtractCallback *pCallback,const C7ZipArchive * pArchive,const C7ZipArchiveItem * pItem) :
+		m_pCallback(pCallback),
+		m_pArchive(pArchive),
+		m_pItem(pItem)
+	{
 	}
 };
 
@@ -253,7 +258,8 @@ bool C7ZipArchiveImpl::Extract(const C7ZipArchiveItem * pArchiveItem, C7ZipSeque
 }
 
 bool C7ZipArchiveImpl::ExtractSeveral(unsigned int *indexList, int numIndices, C7ZipExtractCallback *pCallback) {
-	CCustomArchiveExtractCallback *extractCallbackSpec = new CCustomArchiveExtractCallback(pCallback);
+	C7ZipArchiveItem * pItem = dynamic_cast<C7ZipArchiveItem *>(m_ArchiveItems[0]);
+	CCustomArchiveExtractCallback *extractCallbackSpec = new CCustomArchiveExtractCallback(pCallback, this, pItem);
 	CMyComPtr<IArchiveExtractCallback> extractCallback(extractCallbackSpec);
 
 	return m_pInArchive->Extract(indexList, numIndices, false, extractCallbackSpec) == S_OK;
@@ -387,7 +393,20 @@ STDMETHODIMP CCustomArchiveExtractCallback::SetOperationResult(Int32 operationRe
 
 STDMETHODIMP CCustomArchiveExtractCallback::CryptoGetTextPassword(BSTR *password)
 {
-	return E_NOTIMPL;
+	wstring strPassword(L"");
+
+	if (m_pItem->IsPasswordSet())
+		strPassword = m_pItem->GetArchiveItemPassword();
+	else if (m_pArchive->IsPasswordSet())
+		strPassword = m_pArchive->GetArchivePassword();
+	
+#ifdef _WIN32
+	return StringToBstr(strPassword.c_str(), password);
+#else
+	*password = ::SysAllocString(strPassword.c_str());
+	
+	return S_OK;
+#endif
 }
 
 // ------------------------------
