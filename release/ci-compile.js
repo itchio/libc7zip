@@ -54,12 +54,17 @@ function libname() {
 }
 
 async function sign(target) {
+  if (!process.env.CODESIGN_ENABLED) {
+    $.say(`skipping code signing (CODESIGN_ENABLED not set)`);
+    return;
+  }
+
   if (config.os === "windows") {
     const signKey = "itch corp.";
     // const signUrl = "http://timestamp.comodoca.com/";
     // whoops, comodo won't talk to us now (April 16, 2018)
     const signUrl = "http://timestamp.globalsign.com/scripts/timestamp.dll"
-    
+
     $(await $.sh(`./vendor/signtool.exe sign //v //s MY //n "${signKey}" //fd sha256 //tr "${signUrl}" //td sha256 ${target}`));
   }
 }

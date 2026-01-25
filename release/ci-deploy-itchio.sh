@@ -1,16 +1,16 @@
 #!/bin/bash -xe
 
-if [ -n "${CI_COMMIT_TAG}" ]; then
+if [ "${GITHUB_REF_TYPE}" == "tag" ]; then
   # pushing a stable version
   export CHANNEL_SUFFIX=""
-  export USER_VERSION=`echo ${CI_COMMIT_TAG} | tr -d "v"` # v9.0.0 => 9.0.0
-elif [ "master" == "${CI_COMMIT_REF_NAME}" ]; then
+  export USER_VERSION=`echo ${GITHUB_REF_NAME} | tr -d "v"` # v9.0.0 => 9.0.0
+elif [ "master" == "${GITHUB_REF_NAME}" ]; then
   # pushing head
   export CHANNEL_SUFFIX="-head"
-  export USER_VERSION="${CI_COMMIT_SHA}"
+  export USER_VERSION="${GITHUB_SHA}"
 else
   # pushing a branch that isn't master
-  echo "Not pushing non-master branch ${CI_COMMIT_REF_NAME}"
+  echo "Not pushing non-master branch ${GITHUB_REF_NAME}"
   exit 0
 fi
 

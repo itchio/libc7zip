@@ -1,0 +1,52 @@
+name: Build
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+  pull_request:
+    branches: [master]
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - os: linux
+            arch: amd64
+            runner: ubuntu-latest
+            container: debian:bullseye
+          - os: windows
+            arch: 386
+            runner: windows-latest
+          - os: windows
+            arch: amd64
+            runner: windows-latest
+          - os: darwin
+            arch: amd64
+            runner: macos-latest
+    runs-on: ${{ matrix.runner }}
+    container: ${{ matrix.container || '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+      - name: Install build deps (Linux container)
+        if: matrix.container
+        run: apt-get update && apt-get install -y cmake g++ make curl bzip2
+      - run: node release/ci-compile.js ${{ matrix.os }} ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: broth-${{ matrix.os }}-${{ matrix.arch }}
+          path: broth/
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+      - run: release/ci-deploy-itchio.sh
+        env:
+          BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
