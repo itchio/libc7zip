@@ -145,6 +145,8 @@ async function buildUpstream() {
         makefileName = "makefile.macosx_llvm_64bits"
       }
       $(await $.sh(`cp -f ${makefileName} makefile.machine`))
+      // -Wno-narrowing needed for modern GCC with old p7zip code
+      $(await $.sh(`echo "ALLFLAGS += -Wno-narrowing" >> makefile.machine`))
       $(await $.sh(`make all3`))
     })
     // sic. - it's also called `7z.so` on macOS
