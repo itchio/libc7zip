@@ -39,6 +39,9 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
+      - name: Set WD for Git Bash (Windows)
+        if: matrix.os == 'windows'
+        run: echo "WD=$(cygpath -m "$(dirname "$(which sh)")")/" >> $GITHUB_ENV
       - run: node release/ci-compile.js ${{ matrix.os }} ${{ matrix.arch }}
       - uses: actions/upload-artifact@v4
         with:
