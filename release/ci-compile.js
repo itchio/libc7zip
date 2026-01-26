@@ -95,25 +95,25 @@ async function buildLib() {
 
 async function buildUpstream() {
   if (config.os === "windows") {
-    const urlPrefix = "http://7-zip.org/a";
+    const urlPrefix = "https://7-zip.org/a";
     const msiSpecs = {
       "386": {
-        name: "7z1604.msi",
+        name: "7z1900.msi",
         hashes: {
-          sha1: `e1ee28c92d74c7961da7e4d4e4420e242c2951b2 *7z1604.msi`,
-          sha256: `d9b62c0ed0eb48d2df86d8b83394048414a2a4e1d64a50adb9abcff643471d20 *7z1604.msi`
+          sha1: `887ccdf0e9bab497a39a66506bd6ba641c30ff53 *7z1900.msi`,
+          sha256: `b49d55a52bc0eab14947c8982c413d9be141c337da1368a24aa0484cbb5e89cd *7z1900.msi`
         }
       },
       "amd64": {
-        name: "7z1604-x64.msi",
+        name: "7z1900-x64.msi",
         hashes: {
-          sha1: `bae316e5148d3b42efa1d3f272afc10d3ffa6f4b *7z1604-x64.msi`,
-          sha256: `b3885b2f090f1e9b5cf2b9f802b07fe88e472d70d60732db9f830209ac296067 *7z1604-x64.msi`
+          sha1: `d0dc016df5f9f9bf1a57b57db0e9e82f097b02b6 *7z1900-x64.msi`,
+          sha256: `a7803233eedb6a4b59b3024ccf9292a6fffb94507dc998aa67c5b745d197a5dc *7z1900-x64.msi`
         }
       }
     }
     const spec = msiSpecs[config.arch];
-    $(await $.sh(`wget ${urlPrefix}/${spec.name}`))
+    $(await $.sh(`curl -L -o ${spec.name} ${urlPrefix}/${spec.name}`))
     await checkHashes(spec.hashes);
 
     // assume yes, output in the `msi` folder
