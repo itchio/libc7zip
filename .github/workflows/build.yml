@@ -17,6 +17,10 @@ jobs:
             arch: amd64
             runner: ubuntu-latest
             container: debian:bullseye
+          - os: linux
+            arch: arm64
+            runner: ubuntu-22.04-arm
+            container: debian:bullseye
           - os: windows
             arch: 386
             runner: windows-latest

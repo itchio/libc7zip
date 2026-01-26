@@ -14,7 +14,7 @@ async function ci_compile(args) {
   if (["linux", "windows", "darwin"].indexOf(os) === -1) { throw new Error(`unknown os '${os}'`); }
 
   if (!arch) { throw new Error(`missing arch`); }
-  if (["386", "amd64"].indexOf(arch) === -1) { throw new Error(`unknown os '${arch}'`); }
+  if (["386", "amd64", "arm64"].indexOf(arch) === -1) { throw new Error(`unknown arch '${arch}'`); }
 
   const osarch = `${os}-${arch}`;
   $.say(`compiling libc7zip for ${osarch}`);
