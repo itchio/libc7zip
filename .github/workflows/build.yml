@@ -28,6 +28,9 @@ jobs:
             runner: macos-latest
     runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container || '' }}
+    defaults:
+      run:
+        shell: bash
     steps:
       - name: Install build deps (Linux container)
         if: matrix.container
