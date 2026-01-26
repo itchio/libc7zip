@@ -29,6 +29,9 @@ jobs:
             runner: windows-latest
           - os: darwin
             arch: amd64
+            runner: macos-15-intel
+          - os: darwin
+            arch: arm64
             runner: macos-latest
     runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container || '' }}
