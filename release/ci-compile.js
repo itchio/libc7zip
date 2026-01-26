@@ -76,11 +76,9 @@ async function buildLib() {
 
   let extraCMakeFlags = ""
   if (config.os === "windows") {
-    if (config.arch === "386") {
-      extraCMakeFlags = `-G "Visual Studio 14 2015"`;
-    } else {
-      extraCMakeFlags = `-G "Visual Studio 14 2015 Win64"`;
-    }
+    // VS 2022 uses -A flag for architecture instead of generator suffix
+    const arch = config.arch === "386" ? "Win32" : "x64";
+    extraCMakeFlags = `-G "Visual Studio 17 2022" -A ${arch}`;
   }
 
   await $.cd(buildDir, async () => {
