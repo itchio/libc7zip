@@ -35,6 +35,7 @@ using namespace NWindows;
 
 #ifdef __APPLE__
 #include <sys/types.h>
+#include <AvailabilityMacros.h>
 #endif
 
 #include "dirent.h"
