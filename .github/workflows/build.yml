@@ -37,38 +37,49 @@ on:
         required: false
 
 jobs:
+  choose-builds:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - id: set-matrix
+        run: |
+          all_builds='[
+            {"os":"linux","arch":"amd64","runner":"ubuntu-latest","container":"debian:bullseye"},
+            {"os":"linux","arch":"arm64","runner":"ubuntu-22.04-arm","container":"debian:bullseye"},
+            {"os":"windows","arch":"386","runner":"windows-latest","container":""},
+            {"os":"windows","arch":"amd64","runner":"windows-latest","container":""},
+            {"os":"darwin","arch":"amd64","runner":"macos-15-intel","container":""},
+            {"os":"darwin","arch":"arm64","runner":"macos-latest","container":""}
+          ]'
+
+          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
+            matrix="$all_builds"
+          else
+            matrix=$(echo "$all_builds" | jq -c '[.[] | select(
+              (.os == "linux" and .arch == "amd64" and $linux_amd64 == "true") or
+              (.os == "linux" and .arch == "arm64" and $linux_arm64 == "true") or
+              (.os == "windows" and .arch == "386" and $windows_386 == "true") or
+              (.os == "windows" and .arch == "amd64" and $windows_amd64 == "true") or
+              (.os == "darwin" and .arch == "amd64" and $darwin_amd64 == "true") or
+              (.os == "darwin" and .arch == "arm64" and $darwin_arm64 == "true")
+            )]' \
+              --arg linux_amd64 "${{ inputs.deploy_linux_amd64 }}" \
+              --arg linux_arm64 "${{ inputs.deploy_linux_arm64 }}" \
+              --arg windows_386 "${{ inputs.deploy_windows_386 }}" \
+              --arg windows_amd64 "${{ inputs.deploy_windows_amd64 }}" \
+              --arg darwin_amd64 "${{ inputs.deploy_darwin_amd64 }}" \
+              --arg darwin_arm64 "${{ inputs.deploy_darwin_arm64 }}")
+          fi
+
+          echo "matrix={\"include\":$matrix}" >> $GITHUB_OUTPUT
+
   build:
-    if: |
-      (matrix.os == 'linux' && matrix.arch == 'amd64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_linux_amd64)) ||
-      (matrix.os == 'linux' && matrix.arch == 'arm64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_linux_arm64)) ||
-      (matrix.os == 'windows' && matrix.arch == '386' && (github.event_name != 'workflow_dispatch' || inputs.deploy_windows_386)) ||
-      (matrix.os == 'windows' && matrix.arch == 'amd64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_windows_amd64)) ||
-      (matrix.os == 'darwin' && matrix.arch == 'amd64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_darwin_amd64)) ||
-      (matrix.os == 'darwin' && matrix.arch == 'arm64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_darwin_arm64))
+    needs: choose-builds
+    if: ${{ needs.choose-builds.outputs.matrix != '{"include":[]}' }}
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          - os: linux
-            arch: amd64
-            runner: ubuntu-latest
-            container: debian:bullseye
-          - os: linux
-            arch: arm64
-            runner: ubuntu-22.04-arm
-            container: debian:bullseye
-          - os: windows
-            arch: 386
-            runner: windows-latest
-          - os: windows
-            arch: amd64
-            runner: windows-latest
-          - os: darwin
-            arch: amd64
-            runner: macos-15-intel
-          - os: darwin
-            arch: arm64
-            runner: macos-latest
+      matrix: ${{ fromJSON(needs.choose-builds.outputs.matrix) }}
     runs-on: ${{ matrix.runner }}
     container: ${{ matrix.container || '' }}
     defaults:
