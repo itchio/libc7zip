@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 
 project(libcz7ip)
 
+option(BUILD_TESTS "Build test suite" OFF)
+
 if (MSVC)
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT")
 set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_RELEASE} /MT")
@@ -46,3 +48,7 @@ set (SAMPLE_SOURCES
 
 add_executable(c7zip-sample ${SAMPLE_SOURCES})
 target_link_libraries(c7zip-sample c7zip)
+
+if(BUILD_TESTS)
+    add_subdirectory(test)
+endif()
