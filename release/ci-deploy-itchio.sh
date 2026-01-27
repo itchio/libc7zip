@@ -24,8 +24,10 @@ popd
 
 ${TOOLS_DIR}/butler -V
 
-pushd broth
-for i in *; do
+# GitHub Actions downloads artifacts directly to the working directory as broth-* directories
+for i in broth-*; do
+    [ ! -d "$i" ] && continue
+
     # Check if this platform should be deployed
     case "$i" in
         broth-linux-amd64)  [ "$DEPLOY_LINUX_AMD64" != "true" ] && continue ;;
@@ -39,4 +41,3 @@ for i in *; do
     CHANNEL_NAME="${i}${CHANNEL_SUFFIX}"
     ${TOOLS_DIR}/butler push --userversion "${USER_VERSION}" ./$i "itchio/libc7zip:${CHANNEL_NAME}"
 done
-popd
