@@ -1,6 +1,10 @@
 #!/bin/bash -xe
 
-if [ "${GITHUB_REF_TYPE}" == "tag" ]; then
+if [ -n "${USER_VERSION_OVERRIDE}" ]; then
+  # Manual version override - treat as stable release
+  export CHANNEL_SUFFIX=""
+  export USER_VERSION="${USER_VERSION_OVERRIDE}"
+elif [ "${GITHUB_REF_TYPE}" == "tag" ]; then
   # pushing a stable version
   export CHANNEL_SUFFIX=""
   export USER_VERSION=`echo ${GITHUB_REF_NAME} | tr -d "v"` # v9.0.0 => 9.0.0

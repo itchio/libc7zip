@@ -31,6 +31,10 @@ on:
         description: 'Deploy darwin-arm64'
         type: boolean
         default: true
+      user_version:
+        description: 'Version override (e.g. "1.2.3") - if set, deploys as stable release instead of head'
+        type: string
+        required: false
 
 jobs:
   build:
@@ -121,3 +125,4 @@ jobs:
           DEPLOY_WINDOWS_AMD64: ${{ github.event.inputs.deploy_windows_amd64 }}
           DEPLOY_DARWIN_AMD64: ${{ github.event.inputs.deploy_darwin_amd64 }}
           DEPLOY_DARWIN_ARM64: ${{ github.event.inputs.deploy_darwin_arm64 }}
+          USER_VERSION_OVERRIDE: ${{ github.event.inputs.user_version }}
