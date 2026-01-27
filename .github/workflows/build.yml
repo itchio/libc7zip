@@ -95,6 +95,9 @@ jobs:
       - name: Compile
         if: steps.check.outputs.should_build == 'true'
         run: node release/ci-compile.js ${{ matrix.os }} ${{ matrix.arch }}
+      - name: Run Tests
+        if: steps.check.outputs.should_build == 'true'
+        run: node release/ci-test.js ${{ matrix.os }} ${{ matrix.arch }}
       - uses: actions/upload-artifact@v6
         if: steps.check.outputs.should_build == 'true'
         with:
