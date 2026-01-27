@@ -144,7 +144,8 @@ async function buildUpstream() {
       }
       $(await $.sh(`cp -f ${makefileName} makefile.machine`))
       // -Wno-narrowing needed for modern GCC with old p7zip code
-      $(await $.sh(`echo "ALLFLAGS += -Wno-narrowing" >> makefile.machine`))
+      // -std=c++14 needed because p7zip uses bool++ which is forbidden in C++17
+      $(await $.sh(`echo "ALLFLAGS += -Wno-narrowing -std=c++14" >> makefile.machine`))
       $(await $.sh(`make all3`))
     })
     // sic. - it's also called `7z.so` on macOS
