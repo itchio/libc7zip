@@ -304,6 +304,22 @@ MYEXPORT void extract_callback_free(extract_callback *ec) {
 }
 
 MYEXPORT int archive_extract_several(archive *a, int64_t *indices, int32_t num_indices, extract_callback *ec) {
+	if (num_indices <= 0) {
+		return 1; // Success with nothing to do
+	}
+
+	// Validate all indices are within bounds to prevent crashes in 7z library
+	unsigned int itemCount;
+	if (!a->arch->GetItemCount(&itemCount)) {
+		return 0;
+	}
+
+	for (int32_t i = 0; i < num_indices; i++) {
+		if (indices[i] < 0 || (unsigned int)indices[i] >= itemCount) {
+			return 0; // Invalid index
+		}
+	}
+
 	// that's a bit silly but oh well
 	auto uIndices = new unsigned int[num_indices];
 	for (int32_t i = 0 ; i < num_indices; i++) {

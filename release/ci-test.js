@@ -76,37 +76,10 @@ async function runTests() {
 
     // Copy 7z backend library to test directory so it can be found at runtime
     // We're inside build/${osarch}-test, so we need ../../ to get back to repo root
-    const mainBuildDir = `../../build/${config.osarch}`;
-    let backendSrc;
-    if (config.os === "windows") {
-      backendSrc = `${mainBuildDir}/msi/${backendLibName()}`;
-    } else {
-      backendSrc = `${mainBuildDir}/source/bin/${backendLibName()}`;
-    }
-
-    // Also check if backend lib is in broth directory (from CI compile step)
     const brothDir = `../../broth/${config.osarch}`;
-    const brothBackend = `${brothDir}/${backendLibName()}`;
-
-    // Try to find the backend library
-    // $.sh() throws on non-zero exit, so if test -f succeeds the file exists
-    let foundBackend = false;
-    for (const src of [backendSrc, brothBackend]) {
-      try {
-        await $.sh(`test -f ${src}`);
-        // If we get here without throwing, the file exists
-        $(await $.sh(`cp -f ${src} ${testDir}/`));
-        $.say(`copied ${backendLibName()} from ${src} to ${testDir}/`);
-        foundBackend = true;
-        break;
-      } catch (e) {
-        // File doesn't exist, try next source
-      }
-    }
-
-    if (!foundBackend) {
-      $.say(`warning: could not find ${backendLibName()}, tests may fail`);
-    }
+    const backendSrc = `${brothDir}/${backendLibName()}`;
+    $(await $.sh(`cp -f ${backendSrc} ${testDir}/`));
+    $.say(`copied ${backendLibName()} to ${testDir}/`)
 
     // Copy libc7zip to test directory
     const libSrc = `${libDir}/${libname()}`;
