@@ -75,7 +75,8 @@ async function runTests() {
     }
 
     // Copy 7z backend library to test directory so it can be found at runtime
-    const mainBuildDir = `../build/${config.osarch}`;
+    // We're inside build/${osarch}-test, so we need ../../ to get back to repo root
+    const mainBuildDir = `../../build/${config.osarch}`;
     let backendSrc;
     if (config.os === "windows") {
       backendSrc = `${mainBuildDir}/msi/${backendLibName()}`;
@@ -84,7 +85,7 @@ async function runTests() {
     }
 
     // Also check if backend lib is in broth directory (from CI compile step)
-    const brothDir = `../broth/${config.osarch}`;
+    const brothDir = `../../broth/${config.osarch}`;
     const brothBackend = `${brothDir}/${backendLibName()}`;
 
     // Try to find the backend library
@@ -113,15 +114,16 @@ async function runTests() {
     $.say(`copied ${libname()} to ${testDir}/`);
 
     // Run tests with ctest
+    // Use "cd test &&" instead of "--test-dir test" for compatibility with older CMake (<3.20)
     let testEnv = "";
     if (config.os === "linux") {
-      testEnv = `LD_LIBRARY_PATH=${testDir}:$LD_LIBRARY_PATH`;
+      testEnv = `LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH`;
     } else if (config.os === "darwin") {
-      testEnv = `DYLD_LIBRARY_PATH=${testDir}:$DYLD_LIBRARY_PATH`;
+      testEnv = `DYLD_LIBRARY_PATH=.:$DYLD_LIBRARY_PATH`;
     }
 
     const ctestConfig = config.os === "windows" ? "-C Release" : "";
-    $(await $.sh(`${testEnv} ctest ${ctestConfig} --output-on-failure --test-dir test`));
+    $(await $.sh(`cd test && ${testEnv} ctest ${ctestConfig} --output-on-failure`));
   });
 
   $.say(`tests passed for ${config.osarch}`);
