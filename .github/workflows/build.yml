@@ -37,7 +37,21 @@ on:
         required: false
 
 jobs:
+  choose-builds:
+    runs-on: ubuntu-latest
+    outputs:
+      linux-amd64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_linux_amd64 == 'true' }}
+      linux-arm64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_linux_arm64 == 'true' }}
+      windows-386: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_windows_386 == 'true' }}
+      windows-amd64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_windows_amd64 == 'true' }}
+      darwin-amd64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_darwin_amd64 == 'true' }}
+      darwin-arm64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_darwin_arm64 == 'true' }}
+    steps:
+      - run: echo "Determining which builds to run"
+
   build:
+    needs: choose-builds
+    if: needs.choose-builds.outputs[format('{0}-{1}', matrix.os, matrix.arch)] == 'true'
     strategy:
       fail-fast: false
       matrix:
@@ -68,42 +82,21 @@ jobs:
       run:
         shell: bash
     steps:
-      - name: Check if build requested
-        id: check
-        shell: bash
-        run: |
-          if [ "${{ github.event_name }}" != "workflow_dispatch" ]; then
-            echo "should_build=true" >> $GITHUB_OUTPUT
-          else
-            case "${{ matrix.os }}-${{ matrix.arch }}" in
-              linux-amd64)   echo "should_build=${{ github.event.inputs.deploy_linux_amd64 }}" >> $GITHUB_OUTPUT ;;
-              linux-arm64)   echo "should_build=${{ github.event.inputs.deploy_linux_arm64 }}" >> $GITHUB_OUTPUT ;;
-              windows-386)   echo "should_build=${{ github.event.inputs.deploy_windows_386 }}" >> $GITHUB_OUTPUT ;;
-              windows-amd64) echo "should_build=${{ github.event.inputs.deploy_windows_amd64 }}" >> $GITHUB_OUTPUT ;;
-              darwin-amd64)  echo "should_build=${{ github.event.inputs.deploy_darwin_amd64 }}" >> $GITHUB_OUTPUT ;;
-              darwin-arm64)  echo "should_build=${{ github.event.inputs.deploy_darwin_arm64 }}" >> $GITHUB_OUTPUT ;;
-            esac
-          fi
       - name: Install build deps (Linux container)
-        if: matrix.container && steps.check.outputs.should_build == 'true'
+        if: matrix.container
         run: apt-get update && apt-get install -y cmake g++ make curl bzip2 tar ca-certificates file
       - uses: actions/checkout@v6
-        if: steps.check.outputs.should_build == 'true'
       - uses: actions/setup-node@v6
-        if: steps.check.outputs.should_build == 'true'
         with:
           node-version: 22
       - name: Set WD for Git Bash (Windows)
-        if: matrix.os == 'windows' && steps.check.outputs.should_build == 'true'
+        if: matrix.os == 'windows'
         run: echo "WD=$(cygpath -m "$(dirname "$(which sh)")")/" >> $GITHUB_ENV
       - name: Compile
-        if: steps.check.outputs.should_build == 'true'
         run: node release/ci-compile.js ${{ matrix.os }} ${{ matrix.arch }}
       - name: Run Tests
-        if: steps.check.outputs.should_build == 'true'
         run: node release/ci-test.js ${{ matrix.os }} ${{ matrix.arch }}
       - uses: actions/upload-artifact@v6
-        if: steps.check.outputs.should_build == 'true'
         with:
           name: broth-${{ matrix.os }}-${{ matrix.arch }}
           path: broth/
