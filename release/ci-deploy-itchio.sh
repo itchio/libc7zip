@@ -42,6 +42,6 @@ for i in broth-*; do
         broth-darwin-arm64) [ "$DEPLOY_DARWIN_ARM64" != "true" ] && continue ;;
     esac
 
-    CHANNEL_NAME="${i}${CHANNEL_SUFFIX}"
+    CHANNEL_NAME="${i#broth-}${CHANNEL_SUFFIX}"
     ${TOOLS_DIR}/butler push --userversion "${USER_VERSION}" ./$i "itchio/libc7zip:${CHANNEL_NAME}"
 done
