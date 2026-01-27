@@ -129,6 +129,7 @@ async function buildUpstream() {
     $(await $.sh(`curl -L ${sourceUrl} > source.tar.bz2`));
     checkHashes({sha1, sha256});
 
+    $(await $.sh(`rm -rf source`))
     $(await $.sh(`mkdir source`))
     $(await $.sh(`tar -x -j --strip-components=1 -C source < source.tar.bz2`));
     await $.cd("source", async function() {
@@ -143,9 +144,10 @@ async function buildUpstream() {
         makefileName = "makefile.macosx_llvm_64bits"
       }
       $(await $.sh(`cp -f ${makefileName} makefile.machine`))
-      // -Wno-narrowing needed for modern GCC with old p7zip code
+      // -Wno-narrowing needed for modern GCC/clang with old p7zip code
       // -std=c++14 needed because p7zip uses bool++ which is forbidden in C++17
-      $(await $.sh(`echo "ALLFLAGS += -Wno-narrowing -std=c++14" >> makefile.machine`))
+      // Use ALLFLAGS_CPP (not ALLFLAGS) since these are C++ specific and break C compilation
+      $(await $.sh(`echo "ALLFLAGS_CPP += -Wno-narrowing -std=c++14" >> makefile.machine`))
       $(await $.sh(`make all3`))
     })
     // sic. - it's also called `7z.so` on macOS

@@ -1,2 +1,9 @@
+# CMake build directories
 /build
 /broth
+
+# p7zip upstream source (downloaded during build)
+/source
+/source.tar.bz2
+/sha1.txt
+/sha256.txt
