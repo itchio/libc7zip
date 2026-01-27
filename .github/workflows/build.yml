@@ -37,21 +37,14 @@ on:
         required: false
 
 jobs:
-  choose-builds:
-    runs-on: ubuntu-latest
-    outputs:
-      linux-amd64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_linux_amd64 == 'true' }}
-      linux-arm64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_linux_arm64 == 'true' }}
-      windows-386: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_windows_386 == 'true' }}
-      windows-amd64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_windows_amd64 == 'true' }}
-      darwin-amd64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_darwin_amd64 == 'true' }}
-      darwin-arm64: ${{ github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_darwin_arm64 == 'true' }}
-    steps:
-      - run: echo "Determining which builds to run"
-
   build:
-    needs: choose-builds
-    if: needs.choose-builds.outputs[format('{0}-{1}', matrix.os, matrix.arch)] == 'true'
+    if: |
+      (matrix.os == 'linux' && matrix.arch == 'amd64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_linux_amd64)) ||
+      (matrix.os == 'linux' && matrix.arch == 'arm64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_linux_arm64)) ||
+      (matrix.os == 'windows' && matrix.arch == '386' && (github.event_name != 'workflow_dispatch' || inputs.deploy_windows_386)) ||
+      (matrix.os == 'windows' && matrix.arch == 'amd64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_windows_amd64)) ||
+      (matrix.os == 'darwin' && matrix.arch == 'amd64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_darwin_amd64)) ||
+      (matrix.os == 'darwin' && matrix.arch == 'arm64' && (github.event_name != 'workflow_dispatch' || inputs.deploy_darwin_arm64))
     strategy:
       fail-fast: false
       matrix:
