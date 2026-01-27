@@ -6,6 +6,31 @@ on:
   pull_request:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      deploy_linux_amd64:
+        description: 'Deploy linux-amd64'
+        type: boolean
+        default: true
+      deploy_linux_arm64:
+        description: 'Deploy linux-arm64'
+        type: boolean
+        default: true
+      deploy_windows_386:
+        description: 'Deploy windows-386'
+        type: boolean
+        default: true
+      deploy_windows_amd64:
+        description: 'Deploy windows-amd64'
+        type: boolean
+        default: true
+      deploy_darwin_amd64:
+        description: 'Deploy darwin-amd64'
+        type: boolean
+        default: true
+      deploy_darwin_arm64:
+        description: 'Deploy darwin-arm64'
+        type: boolean
+        default: true
 
 jobs:
   build:
@@ -66,3 +91,9 @@ jobs:
       - run: release/ci-deploy-itchio.sh
         env:
           BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
+          DEPLOY_LINUX_AMD64: ${{ github.event.inputs.deploy_linux_amd64 }}
+          DEPLOY_LINUX_ARM64: ${{ github.event.inputs.deploy_linux_arm64 }}
+          DEPLOY_WINDOWS_386: ${{ github.event.inputs.deploy_windows_386 }}
+          DEPLOY_WINDOWS_AMD64: ${{ github.event.inputs.deploy_windows_amd64 }}
+          DEPLOY_DARWIN_AMD64: ${{ github.event.inputs.deploy_darwin_amd64 }}
+          DEPLOY_DARWIN_ARM64: ${{ github.event.inputs.deploy_darwin_arm64 }}
