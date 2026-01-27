@@ -89,18 +89,18 @@ async function runTests() {
     const brothBackend = `${brothDir}/${backendLibName()}`;
 
     // Try to find the backend library
+    // $.sh() throws on non-zero exit, so if test -f succeeds the file exists
     let foundBackend = false;
     for (const src of [backendSrc, brothBackend]) {
       try {
-        const result = await $.sh(`test -f ${src}`);
-        if (result.code === 0) {
-          $(await $.sh(`cp -f ${src} ${testDir}/`));
-          $.say(`copied ${backendLibName()} from ${src} to ${testDir}/`);
-          foundBackend = true;
-          break;
-        }
+        await $.sh(`test -f ${src}`);
+        // If we get here without throwing, the file exists
+        $(await $.sh(`cp -f ${src} ${testDir}/`));
+        $.say(`copied ${backendLibName()} from ${src} to ${testDir}/`);
+        foundBackend = true;
+        break;
       } catch (e) {
-        // Continue trying other sources
+        // File doesn't exist, try next source
       }
     }
 
