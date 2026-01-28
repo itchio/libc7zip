@@ -7,7 +7,9 @@ const fs = require("fs");
 async function run(cmd) {
   console.log(`\x1b[34m$ ${cmd}\x1b[0m`);
   return new Promise((resolve, reject) => {
-    exec(cmd, { maxBuffer: 50 * 1024 * 1024 }, (err, stdout, stderr) => {
+    // On Windows, use bash (MSYS2) instead of cmd.exe for Unix commands
+    const shell = process.platform === "win32" ? "bash.exe" : true;
+    exec(cmd, { maxBuffer: 50 * 1024 * 1024, shell }, (err, stdout, stderr) => {
       if (stdout) process.stdout.write(stdout);
       if (stderr) process.stderr.write(stderr);
       if (err) reject(new Error(`Command failed: ${cmd}`));
