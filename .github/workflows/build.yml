@@ -83,7 +83,7 @@ jobs:
       - uses: actions/upload-artifact@v6
         with:
           name: broth-${{ matrix.os }}-${{ matrix.arch }}
-          path: broth/
+          path: broth/${{ matrix.os }}-${{ matrix.arch }}/
 
   deploy:
     needs: build
