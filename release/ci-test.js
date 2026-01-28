@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 
-const $ = require("./common");
-const posixPath = require("path").posix;
-const path = require("path");
+const { run, log, inDir } = require("./common");
 
 let config = undefined;
 
@@ -16,7 +14,7 @@ async function ci_test(args) {
   if (["386", "amd64", "arm64"].indexOf(arch) === -1) { throw new Error(`unknown arch '${arch}'`); }
 
   const osarch = `${os}-${arch}`;
-  $.say(`running tests for libc7zip on ${osarch}`);
+  log(`running tests for libc7zip on ${osarch}`);
 
   config = { os, arch, osarch };
 
@@ -48,8 +46,8 @@ function backendLibName() {
 
 async function runTests() {
   let buildDir = `./build/${config.osarch}-test`;
-  $(await $.sh(`rm -rf ${buildDir}`));
-  $(await $.sh(`mkdir -p ${buildDir}`));
+  await run(`rm -rf ${buildDir}`);
+  await run(`mkdir -p ${buildDir}`);
 
   let extraCMakeFlags = "";
   if (config.os === "windows") {
@@ -57,12 +55,12 @@ async function runTests() {
     extraCMakeFlags = `-G "Visual Studio 17 2022" -A ${arch}`;
   }
 
-  await $.cd(buildDir, async () => {
+  await inDir(buildDir, async () => {
     // Configure with tests enabled
-    $(await $.sh(`cmake ${extraCMakeFlags} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ../..`));
+    await run(`cmake ${extraCMakeFlags} -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTS=ON ../..`);
 
     // Build
-    $(await $.sh(`cmake --build . --config Release`));
+    await run(`cmake --build . --config Release`);
 
     // Determine paths based on OS
     let testDir, libDir;
@@ -78,13 +76,13 @@ async function runTests() {
     // We're inside build/${osarch}-test, so we need ../../ to get back to repo root
     const brothDir = `../../broth/${config.osarch}`;
     const backendSrc = `${brothDir}/${backendLibName()}`;
-    $(await $.sh(`cp -f ${backendSrc} ${testDir}/`));
-    $.say(`copied ${backendLibName()} to ${testDir}/`)
+    await run(`cp -f ${backendSrc} ${testDir}/`);
+    log(`copied ${backendLibName()} to ${testDir}/`)
 
     // Copy libc7zip to test directory
     const libSrc = `${libDir}/${libname()}`;
-    $(await $.sh(`cp -f ${libSrc} ${testDir}/`));
-    $.say(`copied ${libname()} to ${testDir}/`);
+    await run(`cp -f ${libSrc} ${testDir}/`);
+    log(`copied ${libname()} to ${testDir}/`);
 
     // Run tests with ctest
     // Use "cd test &&" instead of "--test-dir test" for compatibility with older CMake (<3.20)
@@ -96,10 +94,10 @@ async function runTests() {
     }
 
     const ctestConfig = config.os === "windows" ? "-C Release" : "";
-    $(await $.sh(`cd test && ${testEnv} ctest ${ctestConfig} --output-on-failure`));
+    await run(`cd test && ${testEnv} ctest ${ctestConfig} --output-on-failure`);
   });
 
-  $.say(`tests passed for ${config.osarch}`);
+  log(`tests passed for ${config.osarch}`);
 }
 
 ci_test(process.argv.slice(2));
