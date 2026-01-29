@@ -98,19 +98,19 @@ async function buildUpstream() {
     const urlPrefix = "https://7-zip.org/a";
     const installerSpecs = {
       "386": {
-        name: "7z1900.msi",
+        name: "7z2501.msi",
         isExe: false,
         hashes: {
-          sha1: `887ccdf0e9bab497a39a66506bd6ba641c30ff53 *7z1900.msi`,
-          sha256: `b49d55a52bc0eab14947c8982c413d9be141c337da1368a24aa0484cbb5e89cd *7z1900.msi`
+          sha1: `eb90279bcd894f432b36ae8ac0e73c7be28023ca *7z2501.msi`,
+          sha256: `dce9e456ace76b969fe0fe4d228bf096662c11d2376d99a9210f6364428a94c4 *7z2501.msi`
         }
       },
       "amd64": {
-        name: "7z1900-x64.msi",
+        name: "7z2501-x64.msi",
         isExe: false,
         hashes: {
-          sha1: `d0dc016df5f9f9bf1a57b57db0e9e82f097b02b6 *7z1900-x64.msi`,
-          sha256: `a7803233eedb6a4b59b3024ccf9292a6fffb94507dc998aa67c5b745d197a5dc *7z1900-x64.msi`
+          sha1: `15e3c8accdd5f7631a460be8283a53740dd94de6 *7z2501-x64.msi`,
+          sha256: `e7eb0b7ed5efa4e087b7b17f191797f7af5b7f442d1290c66f3a21777005ef57 *7z2501-x64.msi`
         }
       },
       "arm64": {
