@@ -76,7 +76,8 @@ async function buildLib() {
   let extraCMakeFlags = ""
   if (config.os === "windows") {
     // VS 2022 uses -A flag for architecture instead of generator suffix
-    const arch = config.arch === "386" ? "Win32" : "x64";
+    const archMap = { "386": "Win32", "amd64": "x64", "arm64": "ARM64" };
+    const arch = archMap[config.arch];
     extraCMakeFlags = `-G "Visual Studio 17 2022" -A ${arch}`;
   }
 
@@ -95,9 +96,10 @@ async function buildLib() {
 async function buildUpstream() {
   if (config.os === "windows") {
     const urlPrefix = "https://7-zip.org/a";
-    const msiSpecs = {
+    const installerSpecs = {
       "386": {
         name: "7z1900.msi",
+        isExe: false,
         hashes: {
           sha1: `887ccdf0e9bab497a39a66506bd6ba641c30ff53 *7z1900.msi`,
           sha256: `b49d55a52bc0eab14947c8982c413d9be141c337da1368a24aa0484cbb5e89cd *7z1900.msi`
@@ -105,21 +107,35 @@ async function buildUpstream() {
       },
       "amd64": {
         name: "7z1900-x64.msi",
+        isExe: false,
         hashes: {
           sha1: `d0dc016df5f9f9bf1a57b57db0e9e82f097b02b6 *7z1900-x64.msi`,
           sha256: `a7803233eedb6a4b59b3024ccf9292a6fffb94507dc998aa67c5b745d197a5dc *7z1900-x64.msi`
         }
+      },
+      "arm64": {
+        name: "7z2501-arm64.exe",
+        isExe: true,
+        hashes: {
+          sha1: `17fe72d57ef65d49a8734e11e084150bb75bf152 *7z2501-arm64.exe`,
+          sha256: `6365c7c44e217b9c1009e065daf9f9aa37454e64315b4aaa263f7f8f060755dc *7z2501-arm64.exe`
+        }
       }
     }
-    const spec = msiSpecs[config.arch];
+    const spec = installerSpecs[config.arch];
     await run(`curl -L -o ${spec.name} ${urlPrefix}/${spec.name}`);
     await checkHashes(spec.hashes);
 
-    // assume yes, output in the `msi` folder
-    await run(`7z x -y -omsi ${spec.name}`);
-
-    await run(`mv msi/_7z.dll msi/7z.dll`);
-    config.artifacts.push("msi/7z.dll");
+    if (spec.isExe) {
+      // EXE installer: 7z.dll is at root, no rename needed
+      await run(`7z x -y -oexe ${spec.name}`);
+      config.artifacts.push("exe/7z.dll");
+    } else {
+      // MSI installer: 7z.dll is prefixed with underscore
+      await run(`7z x -y -omsi ${spec.name}`);
+      await run(`mv msi/_7z.dll msi/7z.dll`);
+      config.artifacts.push("msi/7z.dll");
+    }
   } else {
     const sourceUrl = `https://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2`
     const sha1 = `e8819907132811aa1afe5ef296181d3a15cc8f22 *source.tar.bz2`;

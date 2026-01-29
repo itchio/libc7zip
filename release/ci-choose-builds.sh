@@ -6,6 +6,7 @@ all_builds='[
   {"os":"linux","arch":"arm64","runner":"ubuntu-22.04-arm","container":"debian:bullseye"},
   {"os":"windows","arch":"386","runner":"windows-latest","container":""},
   {"os":"windows","arch":"amd64","runner":"windows-latest","container":""},
+  {"os":"windows","arch":"arm64","runner":"windows-11-arm","container":""},
   {"os":"darwin","arch":"amd64","runner":"macos-15-intel","container":""},
   {"os":"darwin","arch":"arm64","runner":"macos-latest","container":""}
 ]'
@@ -18,6 +19,7 @@ else
     (.os == "linux" and .arch == "arm64" and $linux_arm64 == "true") or
     (.os == "windows" and .arch == "386" and $windows_386 == "true") or
     (.os == "windows" and .arch == "amd64" and $windows_amd64 == "true") or
+    (.os == "windows" and .arch == "arm64" and $windows_arm64 == "true") or
     (.os == "darwin" and .arch == "amd64" and $darwin_amd64 == "true") or
     (.os == "darwin" and .arch == "arm64" and $darwin_arm64 == "true")
   )]' \
@@ -25,6 +27,7 @@ else
     --arg linux_arm64 "$DEPLOY_LINUX_ARM64" \
     --arg windows_386 "$DEPLOY_WINDOWS_386" \
     --arg windows_amd64 "$DEPLOY_WINDOWS_AMD64" \
+    --arg windows_arm64 "$DEPLOY_WINDOWS_ARM64" \
     --arg darwin_amd64 "$DEPLOY_DARWIN_AMD64" \
     --arg darwin_arm64 "$DEPLOY_DARWIN_ARM64")
 fi
