@@ -87,13 +87,87 @@ jobs:
         run: node release/ci-test.js ${{ matrix.os }} ${{ matrix.arch }}
       - uses: actions/upload-artifact@v6
         with:
-          name: broth-${{ matrix.os }}-${{ matrix.arch }}
+          name: broth-${{ matrix.os }}-${{ matrix.arch }}${{ matrix.os == 'windows' && '-unsigned' || '' }}
           path: broth/${{ matrix.os }}-${{ matrix.arch }}/
 
-  deploy:
+  sign-windows:
     needs: build
+    if: github.event_name == 'workflow_dispatch' && (github.event.inputs.deploy_windows_386 == 'true' || github.event.inputs.deploy_windows_amd64 == 'true' || github.event.inputs.deploy_windows_arm64 == 'true')
+    runs-on: windows-latest
+    environment: signing-windows
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: 386
+          - arch: amd64
+          - arch: arm64
+    steps:
+      - name: Check if signing requested
+        id: check
+        shell: bash
+        run: |
+          case "${{ matrix.arch }}" in
+            386)   echo "should_sign=${{ github.event.inputs.deploy_windows_386 }}" >> $GITHUB_OUTPUT ;;
+            amd64) echo "should_sign=${{ github.event.inputs.deploy_windows_amd64 }}" >> $GITHUB_OUTPUT ;;
+            arm64) echo "should_sign=${{ github.event.inputs.deploy_windows_arm64 }}" >> $GITHUB_OUTPUT ;;
+          esac
+
+      - name: Download unsigned artifact
+        if: steps.check.outputs.should_sign == 'true'
+        uses: actions/download-artifact@v6
+        with:
+          name: broth-windows-${{ matrix.arch }}-unsigned
+          path: broth-windows-${{ matrix.arch }}/
+
+      - name: Sign DLLs with Azure
+        if: steps.check.outputs.should_sign == 'true'
+        uses: azure/artifact-signing-action@v1
+        with:
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-client-secret: ${{ secrets.AZURE_CLIENT_SECRET }}
+          endpoint: https://wus2.codesigning.azure.net
+          signing-account-name: itchio
+          certificate-profile-name: itchio
+          files: |
+            ${{ github.workspace }}/broth-windows-${{ matrix.arch }}/c7zip.dll
+            ${{ github.workspace }}/broth-windows-${{ matrix.arch }}/7z.dll
+          file-digest: SHA256
+          timestamp-rfc3161: http://timestamp.acs.microsoft.com
+          timestamp-digest: SHA256
+
+      - name: Verify signatures
+        if: steps.check.outputs.should_sign == 'true'
+        shell: pwsh
+        run: |
+          $dlls = @("c7zip.dll", "7z.dll")
+          foreach ($dll in $dlls) {
+            $path = "broth-windows-${{ matrix.arch }}/$dll"
+            $sig = Get-AuthenticodeSignature -FilePath $path
+            $sig | Format-List *
+            if ($sig.Status -ne "Valid") {
+              Write-Error "Signature verification failed for $dll : $($sig.Status)"
+              exit 1
+            }
+            Write-Host "$dll signature verified successfully"
+          }
+
+      - name: Upload signed artifact
+        if: steps.check.outputs.should_sign == 'true'
+        uses: actions/upload-artifact@v6
+        with:
+          name: broth-windows-${{ matrix.arch }}
+          path: broth-windows-${{ matrix.arch }}/
+
+  deploy:
+    needs: [build, sign-windows]
     runs-on: ubuntu-latest
-    if: github.event_name == 'workflow_dispatch'
+    if: |
+      always() &&
+      github.event_name == 'workflow_dispatch' &&
+      needs.build.result == 'success' &&
+      (needs.sign-windows.result == 'success' || needs.sign-windows.result == 'skipped')
     environment: production
     steps:
       - uses: actions/checkout@v6
