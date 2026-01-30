@@ -41,6 +41,7 @@ for i in broth-*; do
         broth-windows-arm64) [ "$DEPLOY_WINDOWS_ARM64" != "true" ] && continue ;;
         broth-darwin-amd64) [ "$DEPLOY_DARWIN_AMD64" != "true" ] && continue ;;
         broth-darwin-arm64) [ "$DEPLOY_DARWIN_ARM64" != "true" ] && continue ;;
+        *) continue ;;  # Skip unrecognized directories (e.g., *-unsigned)
     esac
 
     CHANNEL_NAME="${i#broth-}${CHANNEL_SUFFIX}"
