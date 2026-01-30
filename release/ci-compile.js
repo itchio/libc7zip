@@ -28,7 +28,6 @@ async function ci_compile(args) {
   await buildUpstream();
 
   for (const artifact of config.artifacts) {
-    await sign(artifact);
     await run(`cp -f ${artifact} ${binDir}/`);
   }
 
@@ -50,22 +49,6 @@ function libname() {
       return "c7zip.dll";
   }
   throw new Error(`unknown os ${config.os}`);
-}
-
-async function sign(target) {
-  if (!process.env.CODESIGN_ENABLED) {
-    log(`skipping code signing (CODESIGN_ENABLED not set)`);
-    return;
-  }
-
-  if (config.os === "windows") {
-    const signKey = "itch corp.";
-    // const signUrl = "http://timestamp.comodoca.com/";
-    // whoops, comodo won't talk to us now (April 16, 2018)
-    const signUrl = "http://timestamp.globalsign.com/scripts/timestamp.dll"
-
-    await run(`./vendor/signtool.exe sign //v //s MY //n "${signKey}" //fd sha256 //tr "${signUrl}" //td sha256 ${target}`);
-  }
 }
 
 async function buildLib() {
