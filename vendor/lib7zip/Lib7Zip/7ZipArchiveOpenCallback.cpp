@@ -5,8 +5,7 @@
 #endif
 
 #if !defined(_WIN32) && !defined(_OS2)
-#include "CPP/myWindows/StdAfx.h"
-#include "CPP/include_windows/windows.h"
+#include "CPP/Common/MyWindows.h"
 #endif
 
 #include "C/7zVersion.h"
@@ -25,17 +24,17 @@ using namespace NWindows;
 #include "7ZipInStreamWrapper.h"
 
 /*--------------------C7ZipArchiveOpenCallback------------------*/
-STDMETHODIMP C7ZipArchiveOpenCallback::SetTotal(const UInt64 * /* files */, const UInt64 * /* bytes */)
+Z7_COM7F_IMF(C7ZipArchiveOpenCallback::SetTotal(const UInt64 * /* files */, const UInt64 * /* bytes */))
 {
     return S_OK;
 }
 
-STDMETHODIMP C7ZipArchiveOpenCallback::SetCompleted(const UInt64 * /* files */, const UInt64 * /* bytes */)
+Z7_COM7F_IMF(C7ZipArchiveOpenCallback::SetCompleted(const UInt64 * /* files */, const UInt64 * /* bytes */))
 {
     return S_OK;
 }
 
-STDMETHODIMP C7ZipArchiveOpenCallback::CryptoGetTextPassword(BSTR *password)
+Z7_COM7F_IMF(C7ZipArchiveOpenCallback::CryptoGetTextPassword(BSTR *password))
 {
     if (!PasswordIsDefined) {
         return E_NEEDPASSWORD;
@@ -49,7 +48,7 @@ STDMETHODIMP C7ZipArchiveOpenCallback::CryptoGetTextPassword(BSTR *password)
 #endif
 }
 
-STDMETHODIMP C7ZipArchiveOpenCallback::GetProperty(PROPID propID, PROPVARIANT *value) 
+Z7_COM7F_IMF(C7ZipArchiveOpenCallback::GetProperty(PROPID propID, PROPVARIANT *value))
 {
 	COM_TRY_BEGIN
 	NCOM::CPropVariant prop;
@@ -61,10 +60,10 @@ STDMETHODIMP C7ZipArchiveOpenCallback::GetProperty(PROPID propID, PROPVARIANT *v
 	else
 		switch(propID)
 			{
-			case kpidName:  
+			case kpidName:
 				{
 					if (m_bMultiVolume) {
-						prop = m_pMultiVolumes->GetFirstVolumeName().c_str(); 
+						prop = m_pMultiVolumes->GetFirstVolumeName().c_str();
 					}
 				}
 				break;
@@ -72,14 +71,14 @@ STDMETHODIMP C7ZipArchiveOpenCallback::GetProperty(PROPID propID, PROPVARIANT *v
 			case kpidSize:
 				{
 					if (m_bMultiVolume) {
-						prop = m_pMultiVolumes->GetCurrentVolumeSize();
+						prop = (UInt64)m_pMultiVolumes->GetCurrentVolumeSize();
 					}
 				}
 				break;
 			case kpidAttrib: prop = (UInt32)0; break;
-			case kpidCTime: prop = 0; break;
-			case kpidATime: prop = 0; break;
-			case kpidMTime: prop = 0; break;
+			case kpidCTime: break;
+			case kpidATime: break;
+			case kpidMTime: break;
 			}
 
 	prop.Detach(value);
@@ -87,7 +86,7 @@ STDMETHODIMP C7ZipArchiveOpenCallback::GetProperty(PROPID propID, PROPVARIANT *v
 	COM_TRY_END
 }
 
-STDMETHODIMP C7ZipArchiveOpenCallback::GetStream(const wchar_t *name, IInStream **inStream)
+Z7_COM7F_IMF(C7ZipArchiveOpenCallback::GetStream(const wchar_t *name, IInStream **inStream))
 {
 	C7ZipInStream * pInStream = NULL;
 	if (m_bMultiVolume) {
@@ -101,7 +100,15 @@ STDMETHODIMP C7ZipArchiveOpenCallback::GetStream(const wchar_t *name, IInStream 
 
     C7ZipInStreamWrapper * pArchiveStream = new C7ZipInStreamWrapper(pInStream);
 
-    CMyComPtr<IInStream> inStreamTemp(pArchiveStream); 
+    CMyComPtr<IInStream> inStreamTemp(pArchiveStream);
 	*inStream = inStreamTemp.Detach();
+	return S_OK;
+}
+
+Z7_COM7F_IMF(C7ZipArchiveOpenCallback::SetSubArchiveName(const wchar_t *name))
+{
+	_subArchiveMode = true;
+	_subArchiveName = name;
+	TotalSize = 0;
 	return S_OK;
 }

@@ -120,36 +120,22 @@ async function buildUpstream() {
       config.artifacts.push("msi/7z.dll");
     }
   } else {
-    const sourceUrl = `https://downloads.sourceforge.net/project/p7zip/p7zip/16.02/p7zip_16.02_src_all.tar.bz2`
-    const sha1 = `e8819907132811aa1afe5ef296181d3a15cc8f22 *source.tar.bz2`;
-    const sha256 = `5eb20ac0e2944f6cb9c2d51dd6c4518941c185347d4089ea89087ffdd6e2341f *source.tar.bz2`;
+    // Official 7-zip source (replaces unmaintained p7zip)
+    const sourceUrl = `https://7-zip.org/a/7z2501-src.tar.xz`;
+    const sha1 = `b8d0eaf07d3fa6babb18f6ef50b438805d998254 *source.tar.xz`;
+    const sha256 = `ed087f83ee789c1ea5f39c464c55a5c9d4008deb0efe900814f2df262b82c36e *source.tar.xz`;
 
-    await run(`curl -L ${sourceUrl} > source.tar.bz2`);
+    await run(`curl -L ${sourceUrl} > source.tar.xz`);
     checkHashes({sha1, sha256});
 
     await run(`rm -rf source`);
     await run(`mkdir source`);
-    await run(`tar -x -j --strip-components=1 -C source < source.tar.bz2`);
-    await inDir("source", async function() {
-      let makefileName = "";
-      if (config.os === "linux") {
-        if (config.arch === "amd64") {
-          makefileName = "makefile.linux_amd64";
-        } else {
-          makefileName = "makefile.linux_any_cpu";
-        }
-      } else {
-        makefileName = "makefile.macosx_llvm_64bits"
-      }
-      await run(`cp -f ${makefileName} makefile.machine`);
-      // -Wno-narrowing needed for modern GCC/clang with old p7zip code
-      // -std=c++14 needed because p7zip uses bool++ which is forbidden in C++17
-      // Use ALLFLAGS_CPP (not ALLFLAGS) since these are C++ specific and break C compilation
-      await run(`echo "ALLFLAGS_CPP += -Wno-narrowing -std=c++14" >> makefile.machine`);
-      await run(`make all3`);
+    await run(`tar -x -J -C source < source.tar.xz`);
+    await inDir("source/CPP/7zip/Bundles/Format7zF", async function() {
+      await run(`make -j -f ../../cmpl_gcc.mak`);
     });
-    // sic. - it's also called `7z.so` on macOS
-    config.artifacts.push("source/bin/7z.so");
+    // Output is in b/g/ directory; it's called `7z.so` on both Linux and macOS
+    config.artifacts.push("source/CPP/7zip/Bundles/Format7zF/b/g/7z.so");
   }
 }
 

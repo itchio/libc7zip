@@ -1,22 +1,20 @@
 #ifndef __7ZIP_IN_STREAM_WRAPPER_H__
 #define __7ZIP_IN_STREAM_WRAPPER_H__
 
-class C7ZipInStreamWrapper:
+class C7ZipInStreamWrapper Z7_final:
     public IInStream,
     public IStreamGetSize,
     public CMyUnknownImp
 {
 public:
     C7ZipInStreamWrapper(C7ZipInStream * pInStream);
-    virtual ~C7ZipInStreamWrapper() {}
+    ~C7ZipInStreamWrapper() {}
 
 public:
-    MY_UNKNOWN_IMP2(IInStream, IStreamGetSize)
-
-    STDMETHOD(Read)(void *data, UInt32 size, UInt32 *processedSize);
-    STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition);
-
-    STDMETHOD(GetSize)(UInt64 *size);
+    Z7_COM_UNKNOWN_IMP_2(IInStream, IStreamGetSize)
+    Z7_IFACE_COM7_IMP(ISequentialInStream)
+    Z7_IFACE_COM7_IMP(IInStream)
+    Z7_IFACE_COM7_IMP(IStreamGetSize)
 
 private:
     C7ZipInStream * m_pInStream;

@@ -3,7 +3,7 @@
 
 #define E_NEEDPASSWORD ((HRESULT)0x80040001L)
 
-class C7ZipArchiveOpenCallback:
+class C7ZipArchiveOpenCallback Z7_final:
 public IArchiveOpenCallback,
     public ICryptoGetTextPassword,
 	public IArchiveOpenVolumeCallback,
@@ -11,24 +11,18 @@ public IArchiveOpenCallback,
     public CMyUnknownImp
 {
  public:
-	MY_UNKNOWN_IMP3(
+	Z7_COM_UNKNOWN_IMP_3(
 					IArchiveOpenVolumeCallback,
 					ICryptoGetTextPassword,
 					IArchiveOpenSetSubArchiveName
-					);
+					)
 
-	INTERFACE_IArchiveOpenCallback(;);
-	INTERFACE_IArchiveOpenVolumeCallback(;);
+	Z7_IFACE_COM7_IMP(IArchiveOpenCallback)
+	Z7_IFACE_COM7_IMP(IArchiveOpenVolumeCallback)
+	Z7_IFACE_COM7_IMP(ICryptoGetTextPassword)
+	Z7_IFACE_COM7_IMP(IArchiveOpenSetSubArchiveName)
 
-	STDMETHOD(CryptoGetTextPassword)(BSTR *password);
-
-	STDMETHOD(SetSubArchiveName(const wchar_t *name))		{
-		_subArchiveMode = true;
-		_subArchiveName = name;
-		TotalSize = 0;
-		return  S_OK;
-	}
-
+public:
     bool PasswordIsDefined;
     wstring Password;
 
@@ -40,7 +34,7 @@ public IArchiveOpenCallback,
 	bool m_bMultiVolume;
 
  C7ZipArchiveOpenCallback(C7ZipMultiVolumes * pMultiVolumes) : PasswordIsDefined(false),
-		_subArchiveMode(false), 
+		_subArchiveMode(false),
 		m_pMultiVolumes(pMultiVolumes),
 		m_bMultiVolume(pMultiVolumes != NULL) {
 	}

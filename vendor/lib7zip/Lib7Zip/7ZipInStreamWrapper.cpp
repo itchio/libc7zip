@@ -4,8 +4,7 @@
 #endif
 
 #if !defined(_WIN32) && !defined(_OS2)
-#include "CPP/myWindows/StdAfx.h"
-#include "CPP/include_windows/windows.h"
+#include "CPP/Common/MyWindows.h"
 #endif
 
 #include "C/7zVersion.h"
@@ -26,17 +25,19 @@ m_pInStream(pInStream)
 {
 }
 
-STDMETHODIMP C7ZipInStreamWrapper::Read(void *data, UInt32 size, UInt32 *processedSize)
+Z7_COM7F_IMF(C7ZipInStreamWrapper::Read(void *data, UInt32 size, UInt32 *processedSize))
 {
     return m_pInStream->Read(data,size,processedSize);
 }
 
-STDMETHODIMP C7ZipInStreamWrapper::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition)
+Z7_COM7F_IMF(C7ZipInStreamWrapper::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition))
 {
-    return m_pInStream->Seek(offset,seekOrigin,newPosition);
+    // Cast to handle UInt64 (unsigned long) vs unsigned __int64 (unsigned long long)
+    return m_pInStream->Seek(offset,seekOrigin,reinterpret_cast<unsigned __int64*>(newPosition));
 }
 
-STDMETHODIMP C7ZipInStreamWrapper::GetSize(UInt64 *size)
+Z7_COM7F_IMF(C7ZipInStreamWrapper::GetSize(UInt64 *size))
 {
-    return m_pInStream->GetSize(size);
+    // Cast to handle UInt64 (unsigned long) vs unsigned __int64 (unsigned long long)
+    return m_pInStream->GetSize(reinterpret_cast<unsigned __int64*>(size));
 }

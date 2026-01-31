@@ -5,8 +5,7 @@
 #endif
 
 #if !defined(_WIN32) && !defined(_OS2)
-#include "CPP/myWindows/StdAfx.h"
-#include "CPP/include_windows/windows.h"
+#include "CPP/Common/MyWindows.h"
 #endif
 
 #include "C/7zVersion.h"
@@ -44,10 +43,10 @@ void C7ZipCompressCodecsInfo::InitData()
     if (!m_pLibrary->IsInitialized())
         return;
 
-    const C7ZipObjectPtrArray & handlers = 
+    const C7ZipObjectPtrArray & handlers =
         m_pLibrary->GetInternalObjectsArray();
 
-    for(C7ZipObjectPtrArray::const_iterator it = handlers.begin(); 
+    for(C7ZipObjectPtrArray::const_iterator it = handlers.begin();
         it != handlers.end(); it++)
     {
         C7ZipDllHandler * pHandler = dynamic_cast<C7ZipDllHandler *>(*it);
@@ -56,7 +55,7 @@ void C7ZipCompressCodecsInfo::InitData()
         {
             const C7ZipObjectPtrArray & codecs = pHandler->GetCodecInfoArray();
 
-            for(C7ZipObjectPtrArray::const_iterator itCodec = codecs.begin(); 
+            for(C7ZipObjectPtrArray::const_iterator itCodec = codecs.begin();
                 itCodec != codecs.end(); itCodec++)
             {
                 m_CodecInfoArray.push_back(*itCodec);
@@ -65,18 +64,14 @@ void C7ZipCompressCodecsInfo::InitData()
     }
 }
 
-#if MY_VER_MAJOR >= 15
-HRESULT C7ZipCompressCodecsInfo::GetNumMethods(UInt32 *numMethods)
-#else
-HRESULT C7ZipCompressCodecsInfo::GetNumberOfMethods(UInt32 *numMethods)
-#endif		
+Z7_COM7F_IMF(C7ZipCompressCodecsInfo::GetNumMethods(UInt32 *numMethods))
 {
     *numMethods = (UInt32)m_CodecInfoArray.size();
 
     return S_OK;
 }
 
-HRESULT C7ZipCompressCodecsInfo::GetProperty(UInt32 index, PROPID propID, PROPVARIANT *value)
+Z7_COM7F_IMF(C7ZipCompressCodecsInfo::GetProperty(UInt32 index, PROPID propID, PROPVARIANT *value))
 {
     C7ZipCodecInfo * pCodec = dynamic_cast<C7ZipCodecInfo *>(m_CodecInfoArray[index]);
 
@@ -97,7 +92,7 @@ HRESULT C7ZipCompressCodecsInfo::GetProperty(UInt32 index, PROPID propID, PROPVA
     return pCodec->Functions->v.GetMethodProperty(pCodec->CodecIndex, propID, value);
 }
 
-HRESULT C7ZipCompressCodecsInfo::CreateDecoder(UInt32 index, const GUID *interfaceID, void **coder)
+Z7_COM7F_IMF(C7ZipCompressCodecsInfo::CreateDecoder(UInt32 index, const GUID *interfaceID, void **coder))
 {
     C7ZipCodecInfo * pCodec = dynamic_cast<C7ZipCodecInfo *>(m_CodecInfoArray[index]);
 
@@ -108,7 +103,7 @@ HRESULT C7ZipCompressCodecsInfo::CreateDecoder(UInt32 index, const GUID *interfa
     return S_OK;
 }
 
-HRESULT C7ZipCompressCodecsInfo::CreateEncoder(UInt32 index, const GUID *interfaceID, void **coder)
+Z7_COM7F_IMF(C7ZipCompressCodecsInfo::CreateEncoder(UInt32 index, const GUID *interfaceID, void **coder))
 {
     C7ZipCodecInfo * pCodec = dynamic_cast<C7ZipCodecInfo *>(m_CodecInfoArray[index]);
 

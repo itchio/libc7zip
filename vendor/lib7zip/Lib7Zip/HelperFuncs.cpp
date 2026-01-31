@@ -14,9 +14,8 @@
 #endif
 
 #if !defined(_WIN32) && !defined(_OS2)
-#include "CPP/myWindows/StdAfx.h"
+#include "CPP/Common/MyWindows.h"
 #include "CPP/Windows/Defs.h"
-#include "CPP/7zip/MyVersion.h"
 #endif
 
 #include "C/7zVersion.h"

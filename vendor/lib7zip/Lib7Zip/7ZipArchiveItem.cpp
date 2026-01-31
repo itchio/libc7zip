@@ -5,8 +5,7 @@
 #endif
 
 #if !defined(_WIN32) && !defined(_OS2)
-#include "CPP/myWindows/StdAfx.h"
-#include "CPP/include_windows/windows.h"
+#include "CPP/Common/MyWindows.h"
 #endif
 
 #include "C/7zVersion.h"
@@ -30,7 +29,7 @@ public:
 
 public:
 	virtual wstring GetFullPath() const;
-	virtual UInt64 GetSize() const;
+	virtual unsigned __int64 GetSize() const;
 	virtual bool IsDir() const;
 	virtual bool IsEncrypted() const;
 	virtual unsigned int GetArchiveIndex() const;
@@ -77,14 +76,14 @@ wstring C7ZipArchiveItemImpl::GetFullPath() const
 	return fullPath;
 }
 
-UInt64 C7ZipArchiveItemImpl::GetSize() const
+unsigned __int64 C7ZipArchiveItemImpl::GetSize() const
 {
 	// Get uncompressed size
 	NWindows::NCOM::CPropVariant prop;
 	if (m_pInArchive->GetProperty(m_nIndex, kpidSize, &prop) != 0)
 		return 0;
 
-	UInt64 size = 0;
+	unsigned __int64 size = 0;
 
 	if (prop.vt == VT_UI8 || prop.vt == VT_UI4)
 		size = ConvertPropVariantToUInt64(prop);

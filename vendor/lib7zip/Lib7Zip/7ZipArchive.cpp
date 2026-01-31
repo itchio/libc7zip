@@ -5,8 +5,7 @@
 #endif
 
 #if !defined(_WIN32) && !defined(_OS2)
-#include "CPP/myWindows/StdAfx.h"
-#include "CPP/include_windows/windows.h"
+#include "CPP/Common/MyWindows.h"
 #endif
 
 #include "CPP/7zip/Archive/IArchive.h"
@@ -19,85 +18,74 @@
 
 #include "HelperFuncs.h"
 
-extern bool Create7ZipArchiveItem(C7ZipArchive * pArchive, 
+extern bool Create7ZipArchiveItem(C7ZipArchive * pArchive,
 								  IInArchive * pInArchive,
 								  unsigned int nIndex,
 								  C7ZipArchiveItem ** ppItem);
 
-class C7ZipSequentialOutStreamWrap:
+class C7ZipSequentialOutStreamWrap Z7_final:
 	public ISequentialOutStream,
 	public CMyUnknownImp
 {
 public:
 	C7ZipSequentialOutStreamWrap(C7ZipSequentialOutStream * pSequentialOutStream) : m_pSequentialOutStream(pSequentialOutStream) {}
-	virtual ~C7ZipSequentialOutStreamWrap() {}
+	~C7ZipSequentialOutStreamWrap() {}
 
-public:
-	MY_UNKNOWN_IMP1(ISequentialOutStream)
-
-	STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize)
-	{
-		return m_pSequentialOutStream->Write(data, size, processedSize);
-	}
+	Z7_COM_UNKNOWN_IMP_1(ISequentialOutStream)
+	Z7_IFACE_COM7_IMP(ISequentialOutStream)
 
 private:
 	C7ZipSequentialOutStream * m_pSequentialOutStream;
 };
 
-class C7ZipOutStreamWrap:
+Z7_COM7F_IMF(C7ZipSequentialOutStreamWrap::Write(const void *data, UInt32 size, UInt32 *processedSize))
+{
+	return m_pSequentialOutStream->Write(data, size, processedSize);
+}
+
+class C7ZipOutStreamWrap Z7_final:
 	public IOutStream,
 	public CMyUnknownImp
 {
 public:
 	C7ZipOutStreamWrap(C7ZipOutStream * pOutStream) : m_pOutStream(pOutStream) {}
-	virtual ~C7ZipOutStreamWrap() {}
+	~C7ZipOutStreamWrap() {}
 
-public:
-	MY_UNKNOWN_IMP1(IOutStream)
-
-	STDMETHOD(Seek)(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition)
-	{
-		return m_pOutStream->Seek(offset, seekOrigin, newPosition);
-	}
-
-#if MY_VER_MAJOR > 9 || (MY_VER_MAJOR == 9 && MY_VER_MINOR>=20)
-	STDMETHOD(SetSize)(UInt64 newSize)
-#else
-	STDMETHOD(SetSize)(Int64 newSize)
-#endif
-	{
-		return m_pOutStream->SetSize(newSize);
-	}
-
-	STDMETHOD(Write)(const void *data, UInt32 size, UInt32 *processedSize)
-	{
-		return m_pOutStream->Write(data, size, processedSize);
-	}
+	Z7_COM_UNKNOWN_IMP_1(IOutStream)
+	Z7_IFACE_COM7_IMP(ISequentialOutStream)
+	Z7_IFACE_COM7_IMP(IOutStream)
 
 private:
 	C7ZipOutStream * m_pOutStream;
 };
 
-class CArchiveExtractCallback:
+Z7_COM7F_IMF(C7ZipOutStreamWrap::Write(const void *data, UInt32 size, UInt32 *processedSize))
+{
+	return m_pOutStream->Write(data, size, processedSize);
+}
+
+Z7_COM7F_IMF(C7ZipOutStreamWrap::Seek(Int64 offset, UInt32 seekOrigin, UInt64 *newPosition))
+{
+	// Cast to handle UInt64 (unsigned long) vs unsigned __int64 (unsigned long long)
+	return m_pOutStream->Seek(offset, seekOrigin, reinterpret_cast<unsigned __int64*>(newPosition));
+}
+
+Z7_COM7F_IMF(C7ZipOutStreamWrap::SetSize(UInt64 newSize))
+{
+	return m_pOutStream->SetSize(newSize);
+}
+
+class CArchiveExtractCallback Z7_final:
 	public IArchiveExtractCallback,
 	public ICryptoGetTextPassword,
 	public CMyUnknownImp
 {
 public:
-	MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
+	Z7_COM_UNKNOWN_IMP_1(ICryptoGetTextPassword)
+	Z7_IFACE_COM7_IMP(IProgress)
+	Z7_IFACE_COM7_IMP(IArchiveExtractCallback)
+	Z7_IFACE_COM7_IMP(ICryptoGetTextPassword)
 
-	// IProgress
-	STDMETHOD(SetTotal)(UInt64 size);
-	STDMETHOD(SetCompleted)(const UInt64 *completeValue);
-
-	// IArchiveExtractCallback
-	STDMETHOD(GetStream)(UInt32 index, ISequentialOutStream **outStream, Int32 askExtractMode);
-	STDMETHOD(PrepareOperation)(Int32 askExtractMode);
-	STDMETHOD(SetOperationResult)(Int32 resultEOperationResult);
-
-	// ICryptoGetTextPassword
-	STDMETHOD(CryptoGetTextPassword)(BSTR *aPassword);
-	
 private:
 	C7ZipSequentialOutStreamWrap * _outFileStreamSpec;
 	CMyComPtr<ISequentialOutStream> _outFileStream;
@@ -106,7 +94,7 @@ private:
 	const C7ZipArchive * m_pArchive;
 	const C7ZipArchiveItem * m_pItem;
 public:
-	CArchiveExtractCallback(C7ZipSequentialOutStream * pSequentialOutStream,const C7ZipArchive * pArchive,const C7ZipArchiveItem * pItem) : 
+	CArchiveExtractCallback(C7ZipSequentialOutStream * pSequentialOutStream,const C7ZipArchive * pArchive,const C7ZipArchiveItem * pItem) :
 		m_pSequentialOutStream(pSequentialOutStream),
 		m_pArchive(pArchive),
 		m_pItem(pItem)
@@ -114,26 +102,17 @@ public:
 	}
 };
 
-class CCustomArchiveExtractCallback:
+class CCustomArchiveExtractCallback Z7_final:
 	public IArchiveExtractCallback,
 	public ICryptoGetTextPassword,
 	public CMyUnknownImp
 {
 public:
-	MY_UNKNOWN_IMP1(ICryptoGetTextPassword)
+	Z7_COM_UNKNOWN_IMP_1(ICryptoGetTextPassword)
+	Z7_IFACE_COM7_IMP(IProgress)
+	Z7_IFACE_COM7_IMP(IArchiveExtractCallback)
+	Z7_IFACE_COM7_IMP(ICryptoGetTextPassword)
 
-	// IProgress
-	STDMETHOD(SetTotal)(UInt64 size);
-	STDMETHOD(SetCompleted)(const UInt64 *completeValue);
-
-	// IArchiveExtractCallback
-	STDMETHOD(GetStream)(UInt32 index, ISequentialOutStream **outStream, Int32 askExtractMode);
-	STDMETHOD(PrepareOperation)(Int32 askExtractMode);
-	STDMETHOD(SetOperationResult)(Int32 resultEOperationResult);
-
-	// ICryptoGetTextPassword
-	STDMETHOD(CryptoGetTextPassword)(BSTR *aPassword);
-	
 private:
 	C7ZipExtractCallback *m_pCallback;
 
@@ -243,7 +222,7 @@ bool C7ZipArchiveImpl::Extract(unsigned int index, C7ZipSequentialOutStream * pS
 
 bool C7ZipArchiveImpl::Extract(const C7ZipArchiveItem * pArchiveItem, C7ZipSequentialOutStream * pSequentialOutStream)
 {
-	CArchiveExtractCallback *extractCallbackSpec = 
+	CArchiveExtractCallback *extractCallbackSpec =
 		new CArchiveExtractCallback(pSequentialOutStream, this, pArchiveItem);
 	CMyComPtr<IArchiveExtractCallback> extractCallback(extractCallbackSpec);
 
@@ -322,20 +301,21 @@ bool Create7ZipArchive(C7ZipLibrary * pLibrary, IInArchive * pInArchive, C7ZipAr
 
 //-------------------------------
 
-STDMETHODIMP CCustomArchiveExtractCallback::SetTotal(UInt64 size)
+Z7_COM7F_IMF(CCustomArchiveExtractCallback::SetTotal(UInt64 size))
 {
 	m_pCallback->SetTotal(size);
 	return S_OK;
 }
 
-STDMETHODIMP CCustomArchiveExtractCallback::SetCompleted(const UInt64 * completeValue)
+Z7_COM7F_IMF(CCustomArchiveExtractCallback::SetCompleted(const UInt64 * completeValue))
 {
-	m_pCallback->SetCompleted(completeValue);
+	// Cast to handle type mismatch between UInt64 (unsigned long) and unsigned __int64 (unsigned long long)
+	m_pCallback->SetCompleted(reinterpret_cast<const unsigned __int64*>(completeValue));
 	return S_OK;
 }
 
-STDMETHODIMP CCustomArchiveExtractCallback::GetStream(UInt32 index,
-												ISequentialOutStream **outStream, Int32 askExtractMode)
+Z7_COM7F_IMF(CCustomArchiveExtractCallback::GetStream(UInt32 index,
+												ISequentialOutStream **outStream, Int32 askExtractMode))
 {
 	if (askExtractMode != NArchive::NExtract::NAskMode::kExtract) {
 		// nothing to do then!
@@ -356,12 +336,12 @@ STDMETHODIMP CCustomArchiveExtractCallback::GetStream(UInt32 index,
 	return S_OK;
 }
 
-STDMETHODIMP CCustomArchiveExtractCallback::PrepareOperation(Int32 askExtractMode)
+Z7_COM7F_IMF(CCustomArchiveExtractCallback::PrepareOperation(Int32 askExtractMode))
 {
 	return S_OK;
 }
 
-STDMETHODIMP CCustomArchiveExtractCallback::SetOperationResult(Int32 operationResult)
+Z7_COM7F_IMF(CCustomArchiveExtractCallback::SetOperationResult(Int32 operationResult))
 {
 	switch(operationResult)
 	{
@@ -385,25 +365,25 @@ STDMETHODIMP CCustomArchiveExtractCallback::SetOperationResult(Int32 operationRe
 	return S_OK;
 }
 
-STDMETHODIMP CCustomArchiveExtractCallback::CryptoGetTextPassword(BSTR *password)
+Z7_COM7F_IMF(CCustomArchiveExtractCallback::CryptoGetTextPassword(BSTR *password))
 {
 	return E_NOTIMPL;
 }
 
 // ------------------------------
 
-STDMETHODIMP CArchiveExtractCallback::SetTotal(UInt64 /* size */)
+Z7_COM7F_IMF(CArchiveExtractCallback::SetTotal(UInt64 /* size */))
 {
 	return S_OK;
 }
 
-STDMETHODIMP CArchiveExtractCallback::SetCompleted(const UInt64 * /* completeValue */)
+Z7_COM7F_IMF(CArchiveExtractCallback::SetCompleted(const UInt64 * /* completeValue */))
 {
 	return S_OK;
 }
 
-STDMETHODIMP CArchiveExtractCallback::GetStream(UInt32 index,
-												ISequentialOutStream **outStream, Int32 askExtractMode)
+Z7_COM7F_IMF(CArchiveExtractCallback::GetStream(UInt32 index,
+												ISequentialOutStream **outStream, Int32 askExtractMode))
 {
 	if (askExtractMode != NArchive::NExtract::NAskMode::kExtract)
 		return S_OK;
@@ -417,12 +397,12 @@ STDMETHODIMP CArchiveExtractCallback::GetStream(UInt32 index,
 	return S_OK;
 }
 
-STDMETHODIMP CArchiveExtractCallback::PrepareOperation(Int32 askExtractMode)
+Z7_COM7F_IMF(CArchiveExtractCallback::PrepareOperation(Int32 askExtractMode))
 {
 	return S_OK;
 }
 
-STDMETHODIMP CArchiveExtractCallback::SetOperationResult(Int32 operationResult)
+Z7_COM7F_IMF(CArchiveExtractCallback::SetOperationResult(Int32 operationResult))
 {
 	switch(operationResult)
 	{
@@ -444,7 +424,7 @@ STDMETHODIMP CArchiveExtractCallback::SetOperationResult(Int32 operationResult)
 }
 
 
-STDMETHODIMP CArchiveExtractCallback::CryptoGetTextPassword(BSTR *password)
+Z7_COM7F_IMF(CArchiveExtractCallback::CryptoGetTextPassword(BSTR *password))
 {
 	wstring strPassword(L"");
 
@@ -452,12 +432,12 @@ STDMETHODIMP CArchiveExtractCallback::CryptoGetTextPassword(BSTR *password)
 		strPassword = m_pItem->GetArchiveItemPassword();
 	else if (m_pArchive->IsPasswordSet())
 		strPassword = m_pArchive->GetArchivePassword();
-	
+
 #ifdef _WIN32
 	return StringToBstr(strPassword.c_str(), password);
 #else
 	*password = ::SysAllocString(strPassword.c_str());
-	
+
 	return S_OK;
 #endif
 }
@@ -530,7 +510,7 @@ bool C7ZipArchiveImpl::GetBoolProperty(lib7zip::PropertyIndexEnum propertyIndex,
 
 	NWindows::NCOM::CPropVariant prop;
 
-	if (m_pInArchive->GetArchiveProperty(p7zip_index, &prop) == 0 && 
+	if (m_pInArchive->GetArchiveProperty(p7zip_index, &prop) == 0 &&
 		prop.vt == VT_BOOL) {
 		val = prop.bVal;
 		return true;
@@ -623,4 +603,3 @@ C7ZipArchive::C7ZipArchive()
 C7ZipArchive::~C7ZipArchive()
 {
 }
-

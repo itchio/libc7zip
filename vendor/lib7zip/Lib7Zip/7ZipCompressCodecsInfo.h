@@ -1,24 +1,16 @@
 #ifndef __7ZIP_COMPRESS_CODECS_INFO_H__
 #define __7ZIP_COMPRESS_CODECS_INFO_H__
 
-class C7ZipCompressCodecsInfo : public ICompressCodecsInfo,
+class C7ZipCompressCodecsInfo Z7_final : public ICompressCodecsInfo,
     public CMyUnknownImp,
     public virtual C7ZipObject
 {
 public:
     C7ZipCompressCodecsInfo(C7ZipLibrary * pLibrary);
-    virtual ~C7ZipCompressCodecsInfo();
+    ~C7ZipCompressCodecsInfo();
 
-    MY_UNKNOWN_IMP1(ICompressCodecsInfo)
-
-#if MY_VER_MAJOR >= 15
-    STDMETHOD(GetNumMethods)(UInt32 *numMethods);
-#else    
-    STDMETHOD(GetNumberOfMethods)(UInt32 *numMethods);
-#endif	
-    STDMETHOD(GetProperty)(UInt32 index, PROPID propID, PROPVARIANT *value);
-    STDMETHOD(CreateDecoder)(UInt32 index, const GUID *interfaceID, void **coder);
-    STDMETHOD(CreateEncoder)(UInt32 index, const GUID *interfaceID, void **coder);
+    Z7_COM_UNKNOWN_IMP_1(ICompressCodecsInfo)
+    Z7_IFACE_COM7_IMP(ICompressCodecsInfo)
 
     void InitData();
 private:
@@ -27,4 +19,3 @@ private:
 };
 
 #endif //__7ZIP_COMPRESS_CODECS_INFO_H__
-
