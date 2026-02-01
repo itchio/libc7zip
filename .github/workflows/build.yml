@@ -73,7 +73,7 @@ jobs:
     steps:
       - name: Install build deps (Linux container)
         if: matrix.container
-        run: apt-get update && apt-get install -y cmake g++ make curl bzip2 tar ca-certificates file
+        run: apt-get update && apt-get install -y cmake g++ make curl xz-utils tar ca-certificates file
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
