@@ -131,11 +131,44 @@ async function buildUpstream() {
     await run(`rm -rf source`);
     await run(`mkdir source`);
     await run(`tar -x -J -C source < source.tar.xz`);
+
+    // Select the appropriate makefile and output directory based on OS and arch
+    let makefile, outputDir;
+    if (config.os === "darwin") {
+      // macOS uses clang-based makefiles with architecture-specific flags
+      if (config.arch === "arm64") {
+        makefile = "cmpl_mac_arm64.mak";
+        outputDir = "b/m_arm64";
+      } else {
+        makefile = "cmpl_mac_x64.mak";
+        outputDir = "b/m_x64";
+      }
+
+      // Patch warn_clang_mac.mak to disable -Wswitch-default warning
+      // The upstream 7zip code has many switch statements without default labels
+      // which is intentional but triggers warnings with -Weverything
+      const warnFile = "source/CPP/7zip/warn_clang_mac.mak";
+      const fs = require("fs");
+      // Make file writable (extracted tarball has read-only files)
+      fs.chmodSync(warnFile, 0o644);
+      let content = fs.readFileSync(warnFile, "utf8");
+      content = content.replace(
+        "CFLAGS_WARN = -Weverything",
+        "CFLAGS_WARN = -Weverything -Wno-switch-default"
+      );
+      fs.writeFileSync(warnFile, content);
+      log(`patched ${warnFile} to disable -Wswitch-default`);
+    } else {
+      // Linux uses GCC makefile
+      makefile = "cmpl_gcc.mak";
+      outputDir = "b/g";
+    }
+
     await inDir("source/CPP/7zip/Bundles/Format7zF", async function() {
-      await run(`make -j -f ../../cmpl_gcc.mak`);
+      await run(`make -j -f ../../${makefile}`);
     });
-    // Output is in b/g/ directory; it's called `7z.so` on both Linux and macOS
-    config.artifacts.push("source/CPP/7zip/Bundles/Format7zF/b/g/7z.so");
+    // Output is called `7z.so` on both Linux and macOS
+    config.artifacts.push(`source/CPP/7zip/Bundles/Format7zF/${outputDir}/7z.so`);
   }
 }
 
