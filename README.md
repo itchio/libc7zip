@@ -3,7 +3,7 @@
 
 A wrapper over lib7zip so it can be used from C without callbacks.
 
-These shared libraries are packed as sidecar files with [butler](https://github.com/itchio/butler) to facilitate extraction of archives. Butler dynamically loads these libraries at runtime for all archive extraction, as 7-zip supports a wide range of archive formats (zip, tar, gzip, rar, 7z, and many others).
+This project exists to enable calling 7-zip from Go via [sevenzip-go](https://github.com/itchio/sevenzip-go). These shared libraries are packed as sidecar files with [butler](https://github.com/itchio/butler) to facilitate extraction of archives. Butler dynamically loads these libraries at runtime for all archive extraction, as 7-zip supports a wide range of archive formats (zip, tar, gzip, rar, 7z, and many others).
 
 lib7zip is vendored in `vendor/lib7zip/`, originally based on <https://github.com/stonewell/lib7zip>.
 
