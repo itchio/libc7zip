@@ -5,9 +5,7 @@ A wrapper over lib7zip so it can be used from C without callbacks.
 
 These shared libraries are packed as sidecar files with [butler](https://github.com/itchio/butler) to facilitate extraction of archives. Butler dynamically loads these libraries at runtime for all archive extraction, as 7-zip supports a wide range of archive formats (zip, tar, gzip, rar, 7z, and many others).
 
-This uses this particular lib7zip fork:
-
-  * <https://github.com/itchio/lib7zip>
+lib7zip is vendored in `vendor/lib7zip/`, originally based on <https://github.com/stonewell/lib7zip>.
 
 ## Building
 
@@ -38,14 +36,14 @@ The full CI build is orchestrated by `release/ci-compile.js` and builds for mult
 
 #### Linux and macOS
 
-On Linux and macOS, the build compiles from [p7zip](https://sourceforge.net/projects/p7zip/) source (version 16.02). The build produces:
+On Linux and macOS, the build compiles from official [7-Zip](https://7-zip.org/) source (version 25.01). The build produces:
 
 - `libc7zip.so` / `libc7zip.dylib` - The wrapper library
-- `7z.so` - The 7-zip engine (built from p7zip source)
+- `7z.so` - The 7-zip engine (built from 7-zip source)
 
 #### Windows
 
-Windows builds work differently. Instead of compiling from p7zip source, the build downloads official pre-built 7-zip installers from <https://7-zip.org/a/> (version 25.01) and extracts the `7z.dll` from them. The wrapper library `c7zip.dll` is still compiled from source using Visual Studio.
+Windows builds work differently. Instead of compiling 7-zip from source, the build downloads official pre-built 7-zip installers from <https://7-zip.org/a/> (version 25.01) and extracts the `7z.dll` from them. The wrapper library `c7zip.dll` is still compiled from source using Visual Studio.
 
 The Windows build produces:
 
@@ -60,6 +58,6 @@ The built libraries are deployed to <https://itchio.itch.io/libc7zip> where butl
 
   * libc7zip itself is distributed under the MIT license (see the `LICENSE` file)
     * except for the utf conversion code, which is LGPL 2.1 (from 7-zip)
-  * lib7zip is distributed under the MPL 2.0 license: <https://github.com/itchio/lib7zip>
+  * lib7zip is distributed under the MPL 2.0 license (see `vendor/lib7zip/COPYING`)
   * 7-zip is LGPL 2.1 + some other terms, depending on which build you use: <http://7-zip.org/faq.html>
 
