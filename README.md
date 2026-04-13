@@ -36,14 +36,14 @@ The full CI build is orchestrated by `release/ci-compile.js` and builds for mult
 
 #### Linux and macOS
 
-On Linux and macOS, the build compiles from official [7-Zip](https://7-zip.org/) source (version 25.01). The build produces:
+On Linux and macOS, the build compiles from official [7-Zip](https://7-zip.org/) source (version 26.00). The build produces:
 
 - `libc7zip.so` / `libc7zip.dylib` - The wrapper library
 - `7z.so` - The 7-zip engine (built from 7-zip source)
 
 #### Windows
 
-Windows builds work differently. Instead of compiling 7-zip from source, the build downloads official pre-built 7-zip installers from <https://7-zip.org/a/> (version 25.01) and extracts the `7z.dll` from them. The wrapper library `c7zip.dll` is still compiled from source using Visual Studio.
+Windows builds work differently. Instead of compiling 7-zip from source, the build downloads official pre-built 7-zip installers from <https://7-zip.org/a/> (version 26.00) and extracts the `7z.dll` from them. The wrapper library `c7zip.dll` is still compiled from source using Visual Studio.
 
 The Windows build produces:
 

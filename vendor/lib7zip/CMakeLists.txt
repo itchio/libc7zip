@@ -10,10 +10,10 @@ set(UPSTREAM_DIR ${CMAKE_BINARY_DIR}/upstream-7zip-src)
 set(UPSTREAM_INCLUDE_DIR ${UPSTREAM_DIR})
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-set(UPSTREAM_SRC_URL https://7-zip.org/a/7z2501-src.7z)
+set(UPSTREAM_SRC_URL https://7-zip.org/a/7z2600-src.7z)
 set(UPSTREAM_PATCH_CMD dos2unix ${PATCH_DIR}/001_avoid_duplicate_guids.patch COMMAND patch --ignore-whitespace --strip 1 < ${PATCH_DIR}/001_avoid_duplicate_guids.patch COMMAND unix2dos ${UPSTREAM_DIR}/CPP/Windows/FileIO.h)
 else() # Windows
-set(UPSTREAM_SRC_URL https://7-zip.org/a/7z2501-src.tar.xz)
+set(UPSTREAM_SRC_URL https://7-zip.org/a/7z2600-src.tar.xz)
 set(UPSTREAM_PATCH_CMD )
 endif() # not Windows
 

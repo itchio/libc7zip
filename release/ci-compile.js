@@ -81,27 +81,27 @@ async function buildUpstream() {
     const urlPrefix = "https://7-zip.org/a";
     const installerSpecs = {
       "386": {
-        name: "7z2501.msi",
+        name: "7z2600.msi",
         isExe: false,
         hashes: {
-          sha1: `eb90279bcd894f432b36ae8ac0e73c7be28023ca *7z2501.msi`,
-          sha256: `dce9e456ace76b969fe0fe4d228bf096662c11d2376d99a9210f6364428a94c4 *7z2501.msi`
+          sha1: `22d12f5292440c7644f70697f20f294d206241da *7z2600.msi`,
+          sha256: `53b4f99a2471678020a326fd1d5c888616f5d6c84b00d5db7da30357755c74c3 *7z2600.msi`
         }
       },
       "amd64": {
-        name: "7z2501-x64.msi",
+        name: "7z2600-x64.msi",
         isExe: false,
         hashes: {
-          sha1: `15e3c8accdd5f7631a460be8283a53740dd94de6 *7z2501-x64.msi`,
-          sha256: `e7eb0b7ed5efa4e087b7b17f191797f7af5b7f442d1290c66f3a21777005ef57 *7z2501-x64.msi`
+          sha1: `41e7990b056ebaf0d427f2a00bf1aa12b6010975 *7z2600-x64.msi`,
+          sha256: `c388d0444871ca11b21237001af158cfddad7e137851795e5b65cee69b518495 *7z2600-x64.msi`
         }
       },
       "arm64": {
-        name: "7z2501-arm64.exe",
+        name: "7z2600-arm64.exe",
         isExe: true,
         hashes: {
-          sha1: `17fe72d57ef65d49a8734e11e084150bb75bf152 *7z2501-arm64.exe`,
-          sha256: `6365c7c44e217b9c1009e065daf9f9aa37454e64315b4aaa263f7f8f060755dc *7z2501-arm64.exe`
+          sha1: `f8c2aa3c8f98a11215cddb11340a12c166d67468 *7z2600-arm64.exe`,
+          sha256: `92fac666911336f3bbf3d99fdc48ec36fe20ac7a4200556936e61a8076ae6493 *7z2600-arm64.exe`
         }
       }
     }
@@ -121,9 +121,9 @@ async function buildUpstream() {
     }
   } else {
     // Official 7-zip source (replaces unmaintained p7zip)
-    const sourceUrl = `https://7-zip.org/a/7z2501-src.tar.xz`;
-    const sha1 = `b8d0eaf07d3fa6babb18f6ef50b438805d998254 *source.tar.xz`;
-    const sha256 = `ed087f83ee789c1ea5f39c464c55a5c9d4008deb0efe900814f2df262b82c36e *source.tar.xz`;
+    const sourceUrl = `https://7-zip.org/a/7z2600-src.tar.xz`;
+    const sha1 = `32f1646a6281bb55a547941576660dc7addfff62 *source.tar.xz`;
+    const sha256 = `3e596155744af055a77fc433c703d54e3ea9212246287b5b1436a6beac060f16 *source.tar.xz`;
 
     await run(`curl -L ${sourceUrl} > source.tar.xz`);
     checkHashes({sha1, sha256});
@@ -153,8 +153,8 @@ async function buildUpstream() {
       fs.chmodSync(warnFile, 0o644);
       let content = fs.readFileSync(warnFile, "utf8");
       content = content.replace(
-        "CFLAGS_WARN = -Weverything",
-        "CFLAGS_WARN = -Weverything -Wno-switch-default"
+        "CFLAGS_WARN = -Weverything -Wfatal-errors -Wno-poison-system-directories",
+        "CFLAGS_WARN = -Weverything -Wfatal-errors -Wno-poison-system-directories -Wno-switch-default"
       );
       fs.writeFileSync(warnFile, content);
       log(`patched ${warnFile} to disable -Wswitch-default`);
