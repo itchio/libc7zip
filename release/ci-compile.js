@@ -58,10 +58,11 @@ async function buildLib() {
 
   let extraCMakeFlags = ""
   if (config.os === "windows") {
-    // VS 2022 uses -A flag for architecture instead of generator suffix
+    // Let cmake pick the newest installed Visual Studio (runner images move
+    // between VS versions); only the target architecture is pinned
     const archMap = { "386": "Win32", "amd64": "x64", "arm64": "ARM64" };
     const arch = archMap[config.arch];
-    extraCMakeFlags = `-G "Visual Studio 17 2022" -A ${arch}`;
+    extraCMakeFlags = `-A ${arch}`;
   }
 
   await inDir(buildDir, async () => {

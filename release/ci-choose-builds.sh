@@ -2,8 +2,8 @@
 set -e
 
 all_builds='[
-  {"os":"linux","arch":"amd64","runner":"ubuntu-latest","container":"debian:bullseye"},
-  {"os":"linux","arch":"arm64","runner":"ubuntu-22.04-arm","container":"debian:bullseye"},
+  {"os":"linux","arch":"amd64","runner":"ubuntu-latest","container":"ubuntu:20.04"},
+  {"os":"linux","arch":"arm64","runner":"ubuntu-22.04-arm","container":"ubuntu:20.04"},
   {"os":"windows","arch":"386","runner":"windows-latest","container":""},
   {"os":"windows","arch":"amd64","runner":"windows-latest","container":""},
   {"os":"windows","arch":"arm64","runner":"windows-11-arm","container":""},

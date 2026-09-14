@@ -53,7 +53,7 @@ async function runTests() {
   if (config.os === "windows") {
     const archMap = { "386": "Win32", "amd64": "x64", "arm64": "ARM64" };
     const arch = archMap[config.arch];
-    extraCMakeFlags = `-G "Visual Studio 17 2022" -A ${arch}`;
+    extraCMakeFlags = `-A ${arch}`;
   }
 
   await inDir(buildDir, async () => {
