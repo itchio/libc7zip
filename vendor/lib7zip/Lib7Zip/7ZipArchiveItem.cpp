@@ -199,6 +199,9 @@ bool C7ZipArchiveItemImpl::GetBoolProperty(lib7zip::PropertyIndexEnum propertyIn
 		break;
 	case lib7zip::kpidIsDir: //(IsDir)
 		return IsArchiveItemFolder(m_pInArchive, m_nIndex, val) == S_OK;
+	case lib7zip::kpidIsAltStream: //(Is alternate stream)
+		p7zip_index = kpidIsAltStream;
+		break;
 	default:
 		return false;
 	}

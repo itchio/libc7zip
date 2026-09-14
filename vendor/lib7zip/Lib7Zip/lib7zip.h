@@ -70,6 +70,7 @@ namespace lib7zip {
 		kpidSize, //(Uncompressed Size)
 		kpidSymLink, //(Symbolic link destination)
 		kpidPosixAttrib, //(POSIX Attributes)
+		kpidIsAltStream, //(Is alternate stream, e.g. HFS+/APFS xattr)
 
 		PROP_INDEX_END
 	};
