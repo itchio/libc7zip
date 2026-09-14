@@ -81,27 +81,27 @@ async function buildUpstream() {
     const urlPrefix = "https://7-zip.org/a";
     const installerSpecs = {
       "386": {
-        name: "7z2600.msi",
+        name: "7z2603.msi",
         isExe: false,
         hashes: {
-          sha1: `22d12f5292440c7644f70697f20f294d206241da *7z2600.msi`,
-          sha256: `53b4f99a2471678020a326fd1d5c888616f5d6c84b00d5db7da30357755c74c3 *7z2600.msi`
+          sha1: `7b80ca4b583aa9ba4f99089541c9ba0f6cc91c46 *7z2603.msi`,
+          sha256: `23b5a8843b09db629b6f6a63364bae5430f66d6ecd4b38e11e1661bfaff5d2c6 *7z2603.msi`
         }
       },
       "amd64": {
-        name: "7z2600-x64.msi",
+        name: "7z2603-x64.msi",
         isExe: false,
         hashes: {
-          sha1: `41e7990b056ebaf0d427f2a00bf1aa12b6010975 *7z2600-x64.msi`,
-          sha256: `c388d0444871ca11b21237001af158cfddad7e137851795e5b65cee69b518495 *7z2600-x64.msi`
+          sha1: `f09d573e0c79e744dbdb3c37f79dec45b375c947 *7z2603-x64.msi`,
+          sha256: `c0680064d698a62dd4a5a47f403db356a6531a5473e4c4b1d090ea2590513926 *7z2603-x64.msi`
         }
       },
       "arm64": {
-        name: "7z2600-arm64.exe",
+        name: "7z2603-arm64.exe",
         isExe: true,
         hashes: {
-          sha1: `f8c2aa3c8f98a11215cddb11340a12c166d67468 *7z2600-arm64.exe`,
-          sha256: `92fac666911336f3bbf3d99fdc48ec36fe20ac7a4200556936e61a8076ae6493 *7z2600-arm64.exe`
+          sha1: `c0674e36b8596565c4c0f6d2e5e18907ee58a261 *7z2603-arm64.exe`,
+          sha256: `e22ce71c11dcf503c448fe51e56f41830eb4e1344fa5c7731ae63bce533a8e8e *7z2603-arm64.exe`
         }
       }
     }
@@ -121,9 +121,9 @@ async function buildUpstream() {
     }
   } else {
     // Official 7-zip source (replaces unmaintained p7zip)
-    const sourceUrl = `https://7-zip.org/a/7z2600-src.tar.xz`;
-    const sha1 = `32f1646a6281bb55a547941576660dc7addfff62 *source.tar.xz`;
-    const sha256 = `3e596155744af055a77fc433c703d54e3ea9212246287b5b1436a6beac060f16 *source.tar.xz`;
+    const sourceUrl = `https://7-zip.org/a/7z2603-src.tar.xz`;
+    const sha1 = `a48b1d61b3704fcd70db2ea6d3c85ffc8a09707a *source.tar.xz`;
+    const sha256 = `9cbde5099c6deb73691b0579063da5827522ccbbcba3f0020fd04e8c8c16c0d4 *source.tar.xz`;
 
     await run(`curl -L ${sourceUrl} > source.tar.xz`);
     checkHashes({sha1, sha256});

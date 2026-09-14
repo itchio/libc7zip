@@ -43,4 +43,4 @@ test:
 	node release/ci-test.js $(OS) $(ARCH)
 
 clean:
-	rm -rf build broth source source.tar.bz2 sha1.txt sha256.txt
+	rm -rf build broth source source.tar.xz sha1.txt sha256.txt

@@ -4,6 +4,6 @@
 
 # p7zip upstream source (downloaded during build)
 /source
-/source.tar.bz2
+/source.tar.xz
 /sha1.txt
 /sha256.txt

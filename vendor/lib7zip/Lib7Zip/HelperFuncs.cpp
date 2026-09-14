@@ -15,7 +15,7 @@
 
 #if !defined(_WIN32) && !defined(_OS2)
 #include "CPP/Common/MyWindows.h"
-#include "CPP/Windows/Defs.h"
+// CPP/Windows/Defs.h was renamed in 7-Zip 26.03; nothing from it is needed here
 #endif
 
 #include "C/7zVersion.h"
